@@ -82,6 +82,11 @@
             border-color: #6b7280;
             color: white;
         }
+        input[type="checkbox"] {
+            width: 1.25rem;
+            height: 1.25rem;
+            margin-right: 0.5rem;
+        }
         .error-border {
             border-color: #ef4444;
         }
@@ -149,22 +154,26 @@
         .btn-danger:hover {
             background-color: #dc2626;
         }
+        .btn-edit {
+            background-color: #6b7280;
+            color: white;
+            padding: 0.5rem;
+            font-size: 0.875rem;
+            margin-left: 0.5rem;
+        }
+        .btn-edit:hover {
+            background-color: #4b5563;
+        }
         .dynamic-item {
-            border: 1px dashed #d1d5db;
-            padding: 1rem;
-            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            padding: 0.75rem;
             border-radius: 0.5rem;
             background-color: #f9fafb;
-            position: relative;
         }
         .dark .dynamic-item {
             background-color: #4b5563;
-            border-color: #6b7280;
-        }
-        .remove-btn {
-            position: absolute;
-            top: 0.75rem;
-            right: 0.75rem;
         }
         .pending-item {
             background-color: #fefcbf;
@@ -177,6 +186,17 @@
         }
         .dark .pending-item {
             background-color: #6b7280;
+        }
+        .review-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            background-color: #f9fafb;
+            border-radius: 0.5rem;
+        }
+        .dark .review-item {
+            background-color: #4b5563;
         }
         #message-box {
             position: fixed;
@@ -216,7 +236,7 @@
         .dark #action-buttons {
             background-color: #1f2937;
         }
-        #load-modal {
+        #load-modal, #item-modal {
             display: none;
             position: fixed;
             top: 0;
@@ -228,7 +248,7 @@
             justify-content: center;
             align-items: center;
         }
-        #load-modal-content {
+        #load-modal-content, #item-modal-content {
             background-color: white;
             padding: 1.5rem;
             border-radius: 0.5rem;
@@ -236,7 +256,7 @@
             width: 400px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
-        .dark #load-modal-content {
+        .dark #load-modal-content, .dark #item-modal-content {
             background-color: #374151;
         }
         @media (max-width: 640px) {
@@ -308,12 +328,18 @@
 
             <details class="mb-4">
                 <summary>Follow-Up</summary>
-                <div>
-                    <label for="follow-up-notes">Assignments from previous meeting / ward youth council:</label>
-                    <textarea id="follow-up-notes" name="follow-up-notes" placeholder="Discuss status of previous assignments..."></textarea>
-                    <div id="previous-assignments-display" class="mt-4 text-sm text-gray-600 dark:text-gray-300">
-                        <h4 class="font-semibold mb-2">Pending items from meetings:</h4>
-                        <div id="pending-items-list"></div>
+                <div class="space-y-4">
+                    <div>
+                        <label for="follow-up-notes">Assignments from previous meeting / ward youth council:</label>
+                        <textarea id="follow-up-notes" name="follow-up-notes" placeholder="Discuss status of previous assignments..."></textarea>
+                    </div>
+                    <div>
+                        <label for="previous-ideas">Ideas from Previous Meeting:</label>
+                        <textarea id="previous-ideas" name="previous-ideas" placeholder="Ideas carried over from the last meeting..."></textarea>
+                    </div>
+                    <div id="previous-assignments-display" class="text-sm text-gray-600 dark:text-gray-300">
+                        <h4 class="font-semibold mb-2">Pending Assignments from Past Meetings:</h4>
+                        <ul id="pending-items-list" class="list-disc pl-5"></ul>
                     </div>
                 </div>
             </details>
@@ -324,8 +350,8 @@
                     <label for="ministering-discussion">How can we invite and help our quorum or class come unto Christ? Support them and others?</label>
                     <textarea id="ministering-discussion" name="ministering-discussion" placeholder="Discussion notes..."></textarea>
                     <h4 class="font-semibold mt-4 mb-2">Assignments:</h4>
-                    <div id="ministering-assignments-list"></div>
-                    <button type="button" onclick="addMinisteringAssignment()" class="btn-secondary text-sm" aria-label="Add a new ministering assignment"><i class="fas fa-plus mr-1"></i> Add Assignment</button>
+                    <ul id="ministering-assignments-list" class="list-disc pl-5"></ul>
+                    <button type="button" onclick="openItemModal('assignment', -1)" class="btn-secondary text-sm" aria-label="Add a new ministering assignment"><i class="fas fa-plus mr-1"></i> Add Assignment</button>
                 </div>
             </details>
 
@@ -335,8 +361,8 @@
                     <label for="sunday-discussion">What to discuss with quorum/class members? (Ref: "Counsel Together")</label>
                     <textarea id="sunday-discussion" name="sunday-discussion" placeholder="Discussion points for Sunday..."></textarea>
                     <h4 class="font-semibold mt-4 mb-2">Upcoming Lessons:</h4>
-                    <div id="lessons-list"></div>
-                    <button type="button" onclick="addLesson()" class="btn-secondary text-sm" aria-label="Add a new lesson"><i class="fas fa-plus mr-1"></i> Add Lesson</button>
+                    <ul id="lessons-list" class="list-disc pl-5"></ul>
+                    <button type="button" onclick="openItemModal('lesson', -1)" class="btn-secondary text-sm" aria-label="Add a new lesson"><i class="fas fa-plus mr-1"></i> Add Lesson</button>
                 </div>
             </details>
 
@@ -346,8 +372,8 @@
                     <label for="skills-ideas">Skills to learn/develop? How to serve others?</label>
                     <textarea id="skills-ideas" name="skills-ideas" placeholder="Brainstorm ideas..."></textarea>
                     <h4 class="font-semibold mt-4 mb-2">Planned Service/Activities:</h4>
-                    <div id="activities-list"></div>
-                    <button type="button" onclick="addActivity()" class="btn-secondary text-sm" aria-label="Add a new activity"><i class="fas fa-plus mr-1"></i> Add Activity</button>
+                    <ul id="activities-list" class="list-disc pl-5"></ul>
+                    <button type="button" onclick="openItemModal('activity', -1)" class="btn-secondary text-sm" aria-label="Add a new activity"><i class="fas fa-plus mr-1"></i> Add Activity</button>
                 </div>
             </details>
 
@@ -377,8 +403,8 @@
                 <summary>Review & Closing</summary>
                 <div class="space-y-4">
                     <div>
-                        <label for="review-assignments">Review Assignments Made This Meeting:</label>
-                        <textarea id="review-assignments" name="review-assignments" placeholder="Final check on who is doing what..."></textarea>
+                        <h4 class="font-semibold mb-2">Items for Review:</h4>
+                        <div id="review-items-list"></div>
                     </div>
                     <div>
                         <label for="closing-prayer">Closing Prayer:</label>
@@ -416,6 +442,18 @@
         </div>
     </div>
 
+    <div id="item-modal">
+        <div id="item-modal-content">
+            <h2 id="item-modal-title" class="text-lg font-semibold mb-4 text-gray-800 dark:text-white"></h2>
+            <form id="item-modal-form" class="space-y-4"></form>
+            <p id="item-modal-error" class="helper-text error-text hidden">Please fill in all required fields.</p>
+            <div class="flex gap-4 mt-4">
+                <button type="button" id="item-modal-confirm" class="btn-primary flex-grow" aria-label="Confirm item">Confirm</button>
+                <button type="button" id="item-modal-cancel" class="btn-secondary flex-grow" aria-label="Cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <div id="message-box"><i id="message-icon" class="fas"></i><span id="message-text"></span></div>
 
     <script>
@@ -430,6 +468,8 @@
         let lessonCount = 0;
         let activityCount = 0;
         let autosaveTimeout;
+        let currentModalType = '';
+        let currentModalIndex = -1;
 
         // Theme Handling
         function toggleTheme() {
@@ -460,6 +500,78 @@
         }
         function closeLoadModal() {
             document.getElementById('load-modal').style.display = 'none';
+        }
+
+        function openItemModal(type, index) {
+            console.log('Opening item modal:', { type, index });
+            currentModalType = type;
+            currentModalIndex = index;
+            const modalTitle = document.getElementById('item-modal-title');
+            const modalForm = document.getElementById('item-modal-form');
+            const isEdit = index !== -1;
+            modalTitle.textContent = isEdit ? `Edit ${type.charAt(0).toUpperCase() + type.slice(1)}` : `Add New ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+            modalForm.innerHTML = '';
+
+            let data = {};
+            if (isEdit) {
+                const formData = getFormData();
+                if (type === 'assignment') data = formData.ministeringAssignments[index] || {};
+                else if (type === 'lesson') data = formData.lessons[index] || {};
+                else if (type === 'activity') data = formData.activities[index] || {};
+            }
+
+            if (type === 'assignment') {
+                modalForm.innerHTML = `
+                    <div>
+                        <label for="modal-task">Task:<span class="text-red-500">*</span></label>
+                        <input type="text" id="modal-task" value="${sanitizeInput(data.task || '')}" placeholder="Assignment description" required>
+                    </div>
+                    <div>
+                        <label for="modal-assigned">Assigned To:</label>
+                        <input type="text" id="modal-assigned" value="${sanitizeInput(data.assignedTo || '')}" placeholder="Name">
+                    </div>
+                    <div>
+                        <label for="modal-status">Status:</label>
+                        <select id="modal-status">
+                            <option value="Pending" ${data.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option value="Done" ${data.status === 'Done' ? 'selected' : ''}>Done</option>
+                        </select>
+                    </div>
+                `;
+            } else if (type === 'lesson') {
+                modalForm.innerHTML = `
+                    <div>
+                        <label for="modal-date">Date:</label>
+                        <input type="date" id="modal-date" value="${sanitizeInput(data.date || '')}">
+                    </div>
+                    <div>
+                        <label for="modal-name">Teacher Name:<span class="text-red-500">*</span></label>
+                        <input type="text" id="modal-name" value="${sanitizeInput(data.name || '')}" placeholder="Name" required>
+                    </div>
+                `;
+            } else if (type === 'activity') {
+                modalForm.innerHTML = `
+                    <div>
+                        <label for="modal-date">Date:</label>
+                        <input type="date" id="modal-date" value="${sanitizeInput(data.date || '')}">
+                    </div>
+                    <div>
+                        <label for="modal-desc">Activity:<span class="text-red-500">*</span></label>
+                        <input type="text" id="modal-desc" value="${sanitizeInput(data.description || '')}" placeholder="Activity description" required>
+                    </div>
+                    <div>
+                        <label for="modal-assigned">Assigned To:</label>
+                        <input type="text" id="modal-assigned" value="${sanitizeInput(data.assignedTo || '')}" placeholder="Name(s)">
+                    </div>
+                `;
+            }
+            document.getElementById('item-modal').style.display = 'flex';
+            document.getElementById('item-modal-error').classList.add('hidden');
+        }
+        function closeItemModal() {
+            document.getElementById('item-modal').style.display = 'none';
+            currentModalType = '';
+            currentModalIndex = -1;
         }
 
         // Get Saved Agenda Keys
@@ -501,6 +613,7 @@
             document.getElementById('lessons-list').innerHTML = '';
             document.getElementById('activities-list').innerHTML = '';
             document.getElementById('pending-items-list').innerHTML = '';
+            document.getElementById('review-items-list').innerHTML = '';
             ministeringAssignmentCount = 0;
             lessonCount = 0;
             activityCount = 0;
@@ -524,100 +637,98 @@
         }
 
         // Add Ministering Assignment
-        function addMinisteringAssignment(task = '', assignedTo = '', status = 'Pending') {
-            console.log('Adding ministering assignment:', { task, assignedTo, status });
+        function addMinisteringAssignment(task = '', assignedTo = '', status = 'Pending', confirmed = false) {
+            console.log('Adding ministering assignment:', { task, assignedTo, status, confirmed });
             ministeringAssignmentCount++;
             const list = document.getElementById('ministering-assignments-list');
-            const div = document.createElement('div');
-            div.className = 'dynamic-item ministering-assignment-item';
-            div.id = `min-assign-${ministeringAssignmentCount}`;
-            div.innerHTML = `
-                <button type="button" class="btn-danger remove-btn" onclick="removeItem('min-assign-${ministeringAssignmentCount}')" aria-label="Remove assignment"><i class="fas fa-times"></i></button>
-                <div class="grid grid-cols-1 gap-4">
-                    <div>
-                        <label for="min-task-${ministeringAssignmentCount}" class="text-sm font-medium">Task:</label>
-                        <input type="text" id="min-task-${ministeringAssignmentCount}" name="min-task-${ministeringAssignmentCount}" value="${sanitizeInput(task)}" placeholder="Assignment description">
-                    </div>
-                    <div>
-                        <label for="min-assigned-${ministeringAssignmentCount}" class="text-sm font-medium">Assigned To:</label>
-                        <input type="text" id="min-assigned-${ministeringAssignmentCount}" name="min-assigned-${ministeringAssignmentCount}" value="${sanitizeInput(assignedTo)}" placeholder="Name">
-                    </div>
-                    <div>
-                        <label for="min-status-${ministeringAssignmentCount}" class="text-sm font-medium">Status:</label>
-                        <select id="min-status-${ministeringAssignmentCount}" name="min-status-${ministeringAssignmentCount}">
-                            <option value="Pending" ${status === 'Pending' ? 'selected' : ''}>Pending</option>
-                            <option value="Done" ${status === 'Done' ? 'selected' : ''}>Done</option>
-                        </select>
-                    </div>
-                </div>
+            const li = document.createElement('li');
+            li.className = 'dynamic-item';
+            li.id = `min-assign-${ministeringAssignmentCount}`;
+            li.innerHTML = `
+                <span>Task: ${sanitizeInput(task)} (Assigned to: ${sanitizeInput(assignedTo || 'N/A')}, Status: ${status})</span>
+                <button type="button" class="btn-edit" onclick="openItemModal('assignment', ${ministeringAssignmentCount - 1})" aria-label="Edit assignment"><i class="fas fa-edit"></i></button>
+                <button type="button" class="btn-danger" onclick="removeItem('min-assign-${ministeringAssignmentCount}')" aria-label="Remove assignment"><i class="fas fa-times"></i></button>
             `;
-            list.appendChild(div);
-            div.querySelectorAll('input, select').forEach(input => {
-                input.addEventListener('input', triggerAutosave);
-                input.addEventListener('change', triggerAutosave);
-            });
+            list.appendChild(li);
             triggerAutosave();
-            showMessage('Assignment added');
+            updateReviewItems();
+            showMessage('Assignment confirmed');
         }
 
         // Add Lesson
-        function addLesson(date = '', name = '') {
+        function addLesson(date = '', name = '', confirmed = false) {
+            console.log('Adding lesson:', { date, name, confirmed });
             lessonCount++;
             const list = document.getElementById('lessons-list');
-            const div = document.createElement('div');
-            div.className = 'dynamic-item lesson-item';
-            div.id = `lesson-${lessonCount}`;
-            div.innerHTML = `
-                <button type="button" class="btn-danger remove-btn" onclick="removeItem('lesson-${lessonCount}')" aria-label="Remove lesson"><i class="fas fa-times"></i></button>
-                <div class="grid grid-cols-1 gap-4">
-                    <div>
-                        <label for="lesson-date-${lessonCount}" class="text-sm font-medium">Date:</label>
-                        <input type="date" id="lesson-date-${lessonCount}" name="lesson-date-${lessonCount}" value="${sanitizeInput(date)}">
-                    </div>
-                    <div>
-                        <label for="lesson-name-${lessonCount}" class="text-sm font-medium">Teacher Name:</label>
-                        <input type="text" id="lesson-name-${lessonCount}" name="lesson-name-${lessonCount}" value="${sanitizeInput(name)}" placeholder="Name">
-                    </div>
-                </div>
+            const li = document.createElement('li');
+            li.className = 'dynamic-item';
+            li.id = `lesson-${lessonCount}`;
+            li.innerHTML = `
+                <span>Date: ${sanitizeInput(date || 'N/A')}, Teacher: ${sanitizeInput(name)}</span>
+                <button type="button" class="btn-edit" onclick="openItemModal('lesson', ${lessonCount - 1})" aria-label="Edit lesson"><i class="fas fa-edit"></i></button>
+                <button type="button" class="btn-danger" onclick="removeItem('lesson-${lessonCount}')" aria-label="Remove lesson"><i class="fas fa-times"></i></button>
             `;
-            list.appendChild(div);
-            div.querySelectorAll('input').forEach(input => {
-                input.addEventListener('input', triggerAutosave);
-                input.addEventListener('change', triggerAutosave);
-            });
+            list.appendChild(li);
             triggerAutosave();
+            updateReviewItems();
+            showMessage('Lesson confirmed');
         }
 
         // Add Activity
-        function addActivity(date = '', activityDesc = '', assignedTo = '') {
+        function addActivity(date = '', description = '', assignedTo = '', confirmed = false) {
+            console.log('Adding activity:', { date, description, assignedTo, confirmed });
             activityCount++;
             const list = document.getElementById('activities-list');
-            const div = document.createElement('div');
-            div.className = 'dynamic-item activity-item';
-            div.id = `activity-${activityCount}`;
-            div.innerHTML = `
-                <button type="button" class="btn-danger remove-btn" onclick="removeItem('activity-${activityCount}')" aria-label="Remove activity"><i class="fas fa-times"></i></button>
-                <div class="grid grid-cols-1 gap-4">
-                    <div>
-                        <label for="activity-date-${activityCount}" class="text-sm font-medium">Date:</label>
-                        <input type="date" id="activity-date-${activityCount}" name="activity-date-${activityCount}" value="${sanitizeInput(date)}">
-                    </div>
-                    <div>
-                        <label for="activity-desc-${activityCount}" class="text-sm font-medium">Activity:</label>
-                        <input type="text" id="activity-desc-${activityCount}" name="activity-desc-${activityCount}" value="${sanitizeInput(activityDesc)}" placeholder="Activity description">
-                    </div>
-                    <div>
-                        <label for="activity-assigned-${activityCount}" class="text-sm font-medium">Assigned To:</label>
-                        <input type="text" id="activity-assigned-${activityCount}" name="activity-assigned-${activityCount}" value="${sanitizeInput(assignedTo)}" placeholder="Name(s)">
-                    </div>
-                </div>
+            const li = document.createElement('li');
+            li.className = 'dynamic-item';
+            li.id = `activity-${activityCount}`;
+            li.innerHTML = `
+                <span>Date: ${sanitizeInput(date || 'N/A')}, Activity: ${sanitizeInput(description)}, Assigned to: ${sanitizeInput(assignedTo || 'N/A')}</span>
+                <button type="button" class="btn-edit" onclick="openItemModal('activity', ${activityCount - 1})" aria-label="Edit activity"><i class="fas fa-edit"></i></button>
+                <button type="button" class="btn-danger" onclick="removeItem('activity-${activityCount}')" aria-label="Remove activity"><i class="fas fa-times"></i></button>
             `;
-            list.appendChild(div);
-            div.querySelectorAll('input').forEach(input => {
-                input.addEventListener('input', triggerAutosave);
-                input.addEventListener('change', triggerAutosave);
-            });
+            list.appendChild(li);
             triggerAutosave();
+            updateReviewItems();
+            showMessage('Activity confirmed');
+        }
+
+        // Update Item
+        function updateItem(type, index, data) {
+            console.log('Updating item:', { type, index, data });
+            const formData = getFormData();
+            if (type === 'assignment' && formData.ministeringAssignments[index]) {
+                formData.ministeringAssignments[index] = {
+                    task: data.task,
+                    assignedTo: data.assignedTo,
+                    status: data.status,
+                    confirmed: formData.ministeringAssignments[index].confirmed || false,
+                };
+                const li = document.getElementById(`min-assign-${index + 1}`);
+                li.querySelector('span').textContent = `Task: ${sanitizeInput(data.task)} (Assigned to: ${sanitizeInput(data.assignedTo || 'N/A')}, Status: ${data.status})`;
+                showMessage('Assignment updated');
+            } else if (type === 'lesson' && formData.lessons[index]) {
+                formData.lessons[index] = {
+                    date: data.date,
+                    name: data.name,
+                    confirmed: formData.lessons[index].confirmed || false,
+                };
+                const li = document.getElementById(`lesson-${index + 1}`);
+                li.querySelector('span').textContent = `Date: ${sanitizeInput(data.date || 'N/A')}, Teacher: ${sanitizeInput(data.name)}`;
+                showMessage('Lesson updated');
+            } else if (type === 'activity' && formData.activities[index]) {
+                formData.activities[index] = {
+                    date: data.date,
+                    description: data.description,
+                    assignedTo: data.assignedTo,
+                    confirmed: formData.activities[index].confirmed || false,
+                };
+                const li = document.getElementById(`activity-${index + 1}`);
+                li.querySelector('span').textContent = `Date: ${sanitizeInput(data.date || 'N/A')}, Activity: ${sanitizeInput(data.description)}, Assigned to: ${sanitizeInput(data.assignedTo || 'N/A')}`;
+                showMessage('Activity updated');
+            }
+            triggerAutosave();
+            updateReviewItems();
         }
 
         // Remove Dynamic Item
@@ -626,7 +737,82 @@
             if (item) {
                 item.remove();
                 triggerAutosave();
+                updateReviewItems();
                 showMessage('Item removed');
+            }
+        }
+
+        // Update Review Items
+        function updateReviewItems() {
+            console.log('Updating review items');
+            const list = document.getElementById('review-items-list');
+            list.innerHTML = '';
+            const data = getFormData();
+
+            // Ministering Assignments
+            if (data.ministeringAssignments && data.ministeringAssignments.length > 0) {
+                const h5 = document.createElement('h5');
+                h5.className = 'font-semibold mt-4 mb-2';
+                h5.textContent = 'Ministering Assignments';
+                list.appendChild(h5);
+                data.ministeringAssignments.forEach((item, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'review-item';
+                    li.innerHTML = `
+                        <input type="checkbox" id="confirm-assign-${index}" ${item.confirmed ? 'checked' : ''} aria-label="Confirm assignment: ${sanitizeInput(item.task)}">
+                        <label for="confirm-assign-${index}">Task: ${sanitizeInput(item.task)} (Assigned to: ${sanitizeInput(item.assignedTo || 'N/A')}, Status: ${item.status})</label>
+                    `;
+                    list.appendChild(li);
+                    li.querySelector('input').addEventListener('change', (e) => {
+                        data.ministeringAssignments[index].confirmed = e.target.checked;
+                        triggerAutosave();
+                        showMessage(`Assignment ${e.target.checked ? 'confirmed' : 'unconfirmed'}`);
+                    });
+                });
+            }
+
+            // Lessons
+            if (data.lessons && data.lessons.length > 0) {
+                const h5 = document.createElement('h5');
+                h5.className = 'font-semibold mt-4 mb-2';
+                h5.textContent = 'Lessons';
+                list.appendChild(h5);
+                data.lessons.forEach((item, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'review-item';
+                    li.innerHTML = `
+                        <input type="checkbox" id="confirm-lesson-${index}" ${item.confirmed ? 'checked' : ''} aria-label="Confirm lesson: ${sanitizeInput(item.name)}">
+                        <label for="confirm-lesson-${index}">Date: ${sanitizeInput(item.date || 'N/A')}, Teacher: ${sanitizeInput(item.name)}</label>
+                    `;
+                    list.appendChild(li);
+                    li.querySelector('input').addEventListener('change', (e) => {
+                        data.lessons[index].confirmed = e.target.checked;
+                        triggerAutosave();
+                        showMessage(`Lesson ${e.target.checked ? 'confirmed' : 'unconfirmed'}`);
+                    });
+                });
+            }
+
+            // Activities
+            if (data.activities && data.activities.length > 0) {
+                const h5 = document.createElement('h5');
+                h5.className = 'font-semibold mt-4 mb-2';
+                h5.textContent = 'Activities';
+                list.appendChild(h5);
+                data.activities.forEach((item, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'review-item';
+                    li.innerHTML = `
+                        <input type="checkbox" id="confirm-activity-${index}" ${item.confirmed ? 'checked' : ''} aria-label="Confirm activity: ${sanitizeInput(item.description)}">
+                        <label for="confirm-activity-${index}">Date: ${sanitizeInput(item.date || 'N/A')}, Activity: ${sanitizeInput(item.description)}, Assigned to: ${sanitizeInput(item.assignedTo || 'N/A')}</label>
+                    `;
+                    list.appendChild(li);
+                    li.querySelector('input').addEventListener('change', (e) => {
+                        data.activities[index].confirmed = e.target.checked;
+                        triggerAutosave();
+                        showMessage(`Activity ${e.target.checked ? 'confirmed' : 'unconfirmed'}`);
+                    });
+                });
             }
         }
 
@@ -636,47 +822,43 @@
             const formData = new FormData(form);
             const data = {};
             for (const [key, value] of formData.entries()) {
-                if (!key.startsWith('min-') && !key.startsWith('lesson-') && !key.startsWith('activity-')) {
-                    data[key] = value;
-                }
+                data[key] = value;
             }
             data.ministeringAssignments = [];
-            document.querySelectorAll('.ministering-assignment-item').forEach(item => {
-                const idNum = item.id.split('-')[2];
-                const taskInput = item.querySelector(`#min-task-${idNum}`);
-                const assignedInput = item.querySelector(`#min-assigned-${idNum}`);
-                const statusInput = item.querySelector(`#min-status-${idNum}`);
-                if (taskInput && assignedInput && statusInput) {
+            document.querySelectorAll('#ministering-assignments-list .dynamic-item').forEach((item, index) => {
+                const span = item.querySelector('span').textContent;
+                const match = span.match(/Task: (.*) \(Assigned to: (.*), Status: (.*)\)/);
+                if (match) {
                     data.ministeringAssignments.push({
-                        task: taskInput.value,
-                        assignedTo: assignedInput.value,
-                        status: statusInput.value,
+                        task: match[1],
+                        assignedTo: match[2] === 'N/A' ? '' : match[2],
+                        status: match[3],
+                        confirmed: document.querySelector(`#confirm-assign-${index}`)?.checked || false,
                     });
                 }
             });
             data.lessons = [];
-            document.querySelectorAll('.lesson-item').forEach(item => {
-                const idNum = item.id.split('-')[1];
-                const dateInput = item.querySelector(`#lesson-date-${idNum}`);
-                const nameInput = item.querySelector(`#lesson-name-${idNum}`);
-                if (dateInput && nameInput) {
+            document.querySelectorAll('#lessons-list .dynamic-item').forEach((item, index) => {
+                const span = item.querySelector('span').textContent;
+                const match = span.match(/Date: (.*), Teacher: (.*)/);
+                if (match) {
                     data.lessons.push({
-                        date: dateInput.value,
-                        name: nameInput.value,
+                        date: match[1] === 'N/A' ? '' : match[1],
+                        name: match[2],
+                        confirmed: document.querySelector(`#confirm-lesson-${index}`)?.checked || false,
                     });
                 }
             });
             data.activities = [];
-            document.querySelectorAll('.activity-item').forEach(item => {
-                const idNum = item.id.split('-')[1];
-                const dateInput = item.querySelector(`#activity-date-${idNum}`);
-                const descInput = item.querySelector(`#activity-desc-${idNum}`);
-                const assignedInput = item.querySelector(`#activity-assigned-${idNum}`);
-                if (dateInput && descInput && assignedInput) {
+            document.querySelectorAll('#activities-list .dynamic-item').forEach((item, index) => {
+                const span = item.querySelector('span').textContent;
+                const match = span.match(/Date: (.*), Activity: (.*), Assigned to: (.*)/);
+                if (match) {
                     data.activities.push({
-                        date: dateInput.value,
-                        description: descInput.value,
-                        assignedTo: assignedInput.value,
+                        date: match[1] === 'N/A' ? '' : match[1],
+                        description: match[2],
+                        assignedTo: match[3] === 'N/A' ? '' : match[3],
+                        confirmed: document.querySelector(`#confirm-activity-${index}`)?.checked || false,
                     });
                 }
             });
@@ -695,60 +877,68 @@
             }
             if (data.ministeringAssignments) {
                 data.ministeringAssignments.forEach(item => {
-                    addMinisteringAssignment(item.task, item.assignedTo, item.status);
+                    addMinisteringAssignment(item.task, item.assignedTo, item.status, item.confirmed);
                 });
             }
             if (data.lessons) {
                 data.lessons.forEach(item => {
-                    addLesson(item.date, item.name);
+                    addLesson(item.date, item.name, item.confirmed);
                 });
             }
             if (data.activities) {
                 data.activities.forEach(item => {
-                    addActivity(item.date, item.description, item.assignedTo);
+                    addActivity(item.date, item.description, item.assignedTo, item.confirmed);
                 });
             }
             if (showPending) {
-                updatePendingItems(data);
+                updatePendingItems();
             } else {
                 document.getElementById('previous-assignments-display').style.display = 'none';
             }
         }
 
         // Update Pending Items
-        function updatePendingItems(data) {
-            console.log('Updating pending items:', data);
+        function updatePendingItems() {
+            console.log('Updating pending items');
             const pendingItemsList = document.getElementById('pending-items-list');
             const pendingItemsDisplay = document.getElementById('previous-assignments-display');
             pendingItemsList.innerHTML = '';
             let hasPendingItems = false;
-            if (data && data.ministeringAssignments) {
-                data.ministeringAssignments.forEach((item, index) => {
-                    if (item.status === 'Pending') {
-                        const div = document.createElement('div');
-                        div.className = 'pending-item';
-                        div.innerHTML = `
-                            <span><i class="fas fa-tasks mr-2"></i>${sanitizeInput(item.task)} (Assigned to: ${sanitizeInput(item.assignedTo || 'N/A')})</span>
-                            <button type="button" class="btn-success" onclick="markPendingDone('${sanitizeInput(data['meeting-date'])}', ${index})" aria-label="Mark assignment as done"><i class="fas fa-check mr-1"></i>Mark as Done</button>
-                        `;
-                        pendingItemsList.appendChild(div);
-                        hasPendingItems = true;
+            const keys = getSavedAgendaKeys();
+            keys.forEach(key => {
+                try {
+                    const data = JSON.parse(localStorage.getItem(key));
+                    const meetingDate = data['meeting-date'] || key.replace('agenda_', '');
+                    if (data.ministeringAssignments) {
+                        data.ministeringAssignments.forEach((item, index) => {
+                            if (item.status === 'Pending') {
+                                const li = document.createElement('li');
+                                li.className = 'pending-item';
+                                li.innerHTML = `
+                                    <span><i class="fas fa-tasks mr-2"></i>${sanitizeInput(item.task)} (Assigned to: ${sanitizeInput(item.assignedTo || 'N/A')}, Date: ${meetingDate})</span>
+                                    <button type="button" class="btn-success" onclick="markPendingDone('${key}', ${index})" aria-label="Mark assignment as done"><i class="fas fa-check mr-1"></i>Mark as Done</button>
+                                `;
+                                pendingItemsList.appendChild(li);
+                                hasPendingItems = true;
+                            }
+                        });
                     }
-                });
-            }
+                } catch (e) {
+                    console.error('Error parsing agenda data:', e);
+                }
+            });
             pendingItemsDisplay.style.display = hasPendingItems ? 'block' : 'none';
         }
 
         // Mark Pending Item as Done
-        function markPendingDone(meetingDate, index) {
-            console.log('Marking pending item as done:', { meetingDate, index });
-            const key = `agenda_${meetingDate}`;
+        function markPendingDone(agendaKey, index) {
+            console.log('Marking pending item as done:', { agendaKey, index });
             try {
-                const data = JSON.parse(localStorage.getItem(key));
+                const data = JSON.parse(localStorage.getItem(agendaKey));
                 if (data && data.ministeringAssignments[index]) {
                     data.ministeringAssignments[index].status = 'Done';
-                    localStorage.setItem(key, JSON.stringify(data));
-                    updatePendingItems(data);
+                    localStorage.setItem(agendaKey, JSON.stringify(data));
+                    updatePendingItems();
                     showMessage('Assignment marked as done.');
                 } else {
                     showMessage('Assignment not found.', true);
@@ -774,6 +964,21 @@
                 }
             });
             return errors;
+        }
+
+        // Validate Modal
+        function validateModal(type) {
+            if (type === 'assignment') {
+                const task = document.getElementById('modal-task').value;
+                return task.trim() !== '';
+            } else if (type === 'lesson') {
+                const name = document.getElementById('modal-name').value;
+                return name.trim() !== '';
+            } else if (type === 'activity') {
+                const desc = document.getElementById('modal-desc').value;
+                return desc.trim() !== '';
+            }
+            return true;
         }
 
         // Reset Validation UI
@@ -819,6 +1024,7 @@
                 localStorage.removeItem('agenda_draft');
                 showMessage(`Agenda for ${data['meeting-date']} saved successfully!`);
                 resetValidation();
+                updatePendingItems();
             } catch (e) {
                 console.error('Error saving to localStorage:', e);
                 showMessage('Error saving agenda. Storage might be full.', true);
@@ -877,6 +1083,12 @@
                 showMessage('Please complete required fields before creating a new agenda.', true);
                 return;
             }
+            const ideas = [];
+            if (currentData['skills-ideas']) ideas.push(`- Skills/Service: ${currentData['skills-ideas']}`);
+            if (currentData['sunday-discussion']) ideas.push(`- Sunday Discussion: ${currentData['sunday-discussion']}`);
+            if (currentData['temple-history']) ideas.push(`- Temple & Family History: ${currentData['temple-history']}`);
+            if (currentData['spirit-unity']) ideas.push(`- Spirit & Unity: ${currentData['spirit-unity']}`);
+            const previousIdeas = ideas.length > 0 ? ideas.join('\n') : '';
             clearForm();
             const lastDateStr = currentData['meeting-date'];
             if (lastDateStr) {
@@ -893,8 +1105,9 @@
                     console.error('Error calculating next date:', e);
                 }
             }
-            updatePendingItems(currentData);
-            showMessage('New agenda created. Pending items added to Follow-Up.');
+            form.elements['previous-ideas'].value = previousIdeas;
+            updatePendingItems();
+            showMessage('New agenda created. Pending assignments and ideas carried over.');
             document.querySelector('details:nth-of-type(2)').open = true;
         }
 
@@ -936,6 +1149,35 @@
                 y += 5;
 
                 doc.setFontSize(14);
+                y = addText('Follow-Up', 10, y);
+                doc.setFontSize(12);
+                y = addText(data['follow-up-notes'] || 'No notes', 10, y, { maxWidth });
+                if (data['previous-ideas']) {
+                    y = addText('Ideas from Previous Meeting:', 10, y);
+                    y = addText(data['previous-ideas'], 15, y, { maxWidth });
+                }
+                const pendingItems = [];
+                getSavedAgendaKeys().forEach(key => {
+                    const agendaData = JSON.parse(localStorage.getItem(key));
+                    const meetingDate = agendaData['meeting-date'] || key.replace('agenda_', '');
+                    if (agendaData.ministeringAssignments) {
+                        agendaData.ministeringAssignments.forEach(item => {
+                            if (item.status === 'Pending') {
+                                pendingItems.push(`- ${item.task || 'No task'} (Assigned to: ${item.assignedTo || 'N/A'}, Date: ${meetingDate})`);
+                            }
+                        });
+                    }
+                });
+                if (pendingItems.length > 0) {
+                    y = addText('Pending Assignments:', 10, y);
+                    pendingItems.forEach(item => {
+                        y = addText(item, 15, y, { maxWidth });
+                    });
+                } else {
+                    y = addText('No pending assignments', 15, y);
+                }
+
+                doc.setFontSize(14);
                 y = addText('Ministering', 10, y);
                 doc.setFontSize(12);
                 y = addText(data['ministering-discussion'] || 'No notes', 10, y, { maxWidth });
@@ -951,6 +1193,30 @@
                 doc.setFontSize(14);
                 y = addText('Review & Closing', 10, y);
                 doc.setFontSize(12);
+                if (data.ministeringAssignments && data.ministeringAssignments.length > 0) {
+                    y = addText('Ministering Assignments:', 10, y);
+                    data.ministeringAssignments.forEach(item => {
+                        const text = `- ${item.task || 'No task'} (Assigned to: ${item.assignedTo || 'N/A'}, Status: ${item.status || 'N/A'}, Confirmed: ${item.confirmed ? 'Yes' : 'No'})`;
+                        y = addText(text, 15, y);
+                    });
+                }
+                if (data.lessons && data.lessons.length > 0) {
+                    y = addText('Lessons:', 10, y);
+                    data.lessons.forEach(item => {
+                        const text = `- Date: ${item.date || 'N/A'}, Teacher: ${item.name || 'N/A'}, Confirmed: ${item.confirmed ? 'Yes' : 'No'}`;
+                        y = addText(text, 15, y);
+                    });
+                }
+                if (data.activities && data.activities.length > 0) {
+                    y = addText('Activities:', 10, y);
+                    data.activities.forEach(item => {
+                        const text = `- Date: ${item.date || 'N/A'}, Activity: ${item.description || 'N/A'}, Assigned to: ${item.assignedTo || 'N/A'}, Confirmed: ${item.confirmed ? 'Yes' : 'No'}`;
+                        y = addText(text, 15, y);
+                    });
+                }
+                if (!data.ministeringAssignments?.length && !data.lessons?.length && !data.activities?.length) {
+                    y = addText('No items for review', 15, y);
+                }
                 y = addText(`Closing Prayer: ${data['closing-prayer'] || 'N/A'}`, 10, y);
 
                 doc.save(`Agenda_${data['meeting-date'] || 'untitled'}.pdf`);
@@ -976,6 +1242,43 @@
             });
         }
 
+        // Modal Confirm
+        function confirmItem() {
+            console.log('Confirming item:', { type: currentModalType, index: currentModalIndex });
+            if (!validateModal(currentModalType)) {
+                document.getElementById('item-modal-error').classList.remove('hidden');
+                return;
+            }
+            if (currentModalType === 'assignment') {
+                const task = document.getElementById('modal-task').value;
+                const assignedTo = document.getElementById('modal-assigned').value;
+                const status = document.getElementById('modal-status').value;
+                if (currentModalIndex === -1) {
+                    addMinisteringAssignment(task, assignedTo, status);
+                } else {
+                    updateItem('assignment', currentModalIndex, { task, assignedTo, status });
+                }
+            } else if (currentModalType === 'lesson') {
+                const date = document.getElementById('modal-date').value;
+                const name = document.getElementById('modal-name').value;
+                if (currentModalIndex === -1) {
+                    addLesson(date, name);
+                } else {
+                    updateItem('lesson', currentModalIndex, { date, name });
+                }
+            } else if (currentModalType === 'activity') {
+                const date = document.getElementById('modal-date').value;
+                const description = document.getElementById('modal-desc').value;
+                const assignedTo = document.getElementById('modal-assigned').value;
+                if (currentModalIndex === -1) {
+                    addActivity(date, description, assignedTo);
+                } else {
+                    updateItem('activity', currentModalIndex, { date, description, assignedTo });
+                }
+            }
+            closeItemModal();
+        }
+
         // Event Listeners
         document.getElementById('save-button').addEventListener('click', saveAgenda);
         document.getElementById('mobile-save-button').addEventListener('click', saveAgenda);
@@ -989,6 +1292,8 @@
         document.getElementById('view-past-button').addEventListener('click', openLoadModal);
         document.getElementById('load-button').addEventListener('click', loadAgenda);
         document.getElementById('close-modal-button').addEventListener('click', closeLoadModal);
+        document.getElementById('item-modal-confirm').addEventListener('click', confirmItem);
+        document.getElementById('item-modal-cancel').addEventListener('click', closeItemModal);
         form.addEventListener('input', triggerAutosave);
         form.addEventListener('change', triggerAutosave);
 
@@ -1019,6 +1324,7 @@
                     console.error('Error loading draft:', e);
                 }
             }
+            updatePendingItems();
             setupAccordion();
         });
     </script>
