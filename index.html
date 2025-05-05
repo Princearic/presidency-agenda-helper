@@ -71,7 +71,7 @@
             border: 1px solid #d1d5db;
             border-radius: 0.5rem;
             margin-top: 0.25rem;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
             font-size: 1rem;
         }
         .dark input[type="text"],
@@ -81,6 +81,9 @@
             background-color: #4b5563;
             border-color: #6b7280;
             color: white;
+        }
+        .error-border {
+            border-color: #ef4444;
         }
         textarea {
             min-height: 100px;
@@ -92,14 +95,26 @@
         .dark label {
             color: #d1d5db;
         }
+        .helper-text {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: -0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .error-text {
+            color: #ef4444;
+        }
         button {
             padding: 0.75rem 1.5rem;
             border-radius: 0.5rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.2s, box-shadow 0.2s;
+            transition: all 0.2s ease-in-out;
             min-width: 48px;
             min-height: 48px;
+        }
+        button:hover {
+            transform: scale(1.05);
         }
         .btn-primary {
             background-color: #4f46e5;
@@ -107,6 +122,14 @@
         }
         .btn-primary:hover {
             background-color: #4338ca;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        .btn-success {
+            background-color: #10b981;
+            color: white;
+        }
+        .btn-success:hover {
+            background-color: #059669;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
         .btn-secondary {
@@ -125,15 +148,6 @@
         }
         .btn-danger:hover {
             background-color: #dc2626;
-        }
-        .btn-success {
-            background-color: #10b981;
-            color: white;
-            padding: 0.5rem;
-            font-size: 0.875rem;
-        }
-        .btn-success:hover {
-            background-color: #059669;
         }
         .dynamic-item {
             border: 1px dashed #d1d5db;
@@ -178,6 +192,12 @@
             opacity: 0;
             transition: opacity 0.5s ease-in-out;
             pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        #message-box.error {
+            background-color: #ef4444;
         }
         #message-box.show {
             opacity: 1;
@@ -196,6 +216,29 @@
         .dark #action-buttons {
             background-color: #1f2937;
         }
+        #load-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        #load-modal-content {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            max-width: 90%;
+            width: 400px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .dark #load-modal-content {
+            background-color: #374151;
+        }
         @media (max-width: 640px) {
             #action-buttons {
                 display: flex;
@@ -207,6 +250,19 @@
                 padding-left: 1rem;
                 padding-right: 1rem;
             }
+            button[title]:hover::after {
+                content: attr(title);
+                position: absolute;
+                background-color: #374151;
+                color: white;
+                padding: 0.25rem 0.5rem;
+                border-radius: 0.25rem;
+                font-size: 0.75rem;
+                bottom: 100%;
+                left: 50%;
+                transform: translateX(-50%);
+                white-space: nowrap;
+            }
         }
     </style>
 </head>
@@ -214,19 +270,13 @@
     <div class="max-w-2xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Presidency Meeting Agenda</h1>
-            <button id="theme-toggle" class="btn-secondary" title="Toggle Dark Mode">
+            <button id="theme-toggle" class="btn-secondary" title="Toggle Dark Mode" aria-label="Toggle dark mode">
                 <i class="fas fa-moon"></i>
             </button>
         </div>
 
         <div class="mb-6">
-            <label for="load-agenda" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Load Previous Agenda:</label>
-            <div class="flex">
-                <select id="load-agenda" class="flex-grow">
-                    <option value="">-- Select an Agenda --</option>
-                </select>
-                <button id="load-button" class="btn-secondary ml-2">Load</button>
-            </div>
+            <button id="view-past-button" class="btn-secondary" aria-label="View past agendas"><i class="fas fa-history mr-1"></i> View Past Agendas</button>
         </div>
 
         <div class="mb-6 flex items-center">
@@ -241,14 +291,17 @@
                     <div>
                         <label for="meeting-date">Date:</label>
                         <input type="date" id="meeting-date" name="meeting-date" required autocomplete="off">
+                        <p class="helper-text error-text hidden" id="meeting-date-error">Required</p>
                     </div>
                     <div>
                         <label for="conducting">Conducting:</label>
                         <input type="text" id="conducting" name="conducting" placeholder="Name of person conducting" autocomplete="name" required>
+                        <p class="helper-text error-text hidden" id="conducting-error">Required</p>
                     </div>
                     <div>
                         <label for="opening-prayer">Opening Prayer:</label>
                         <input type="text" id="opening-prayer" name="opening-prayer" placeholder="Name of person praying" autocomplete="name" required>
+                        <p class="helper-text error-text hidden" id="opening-prayer-error">Required</p>
                     </div>
                 </div>
             </details>
@@ -272,7 +325,7 @@
                     <textarea id="ministering-discussion" name="ministering-discussion" placeholder="Discussion notes..."></textarea>
                     <h4 class="font-semibold mt-4 mb-2">Assignments:</h4>
                     <div id="ministering-assignments-list"></div>
-                    <button type="button" onclick="addMinisteringAssignment()" class="btn-secondary text-sm"><i class="fas fa-plus mr-1"></i> Add Assignment</button>
+                    <button type="button" onclick="addMinisteringAssignment()" class="btn-secondary text-sm" aria-label="Add a new ministering assignment"><i class="fas fa-plus mr-1"></i> Add Assignment</button>
                 </div>
             </details>
 
@@ -283,7 +336,7 @@
                     <textarea id="sunday-discussion" name="sunday-discussion" placeholder="Discussion points for Sunday..."></textarea>
                     <h4 class="font-semibold mt-4 mb-2">Upcoming Lessons:</h4>
                     <div id="lessons-list"></div>
-                    <button type="button" onclick="addLesson()" class="btn-secondary text-sm"><i class="fas fa-plus mr-1"></i> Add Lesson</button>
+                    <button type="button" onclick="addLesson()" class="btn-secondary text-sm" aria-label="Add a new lesson"><i class="fas fa-plus mr-1"></i> Add Lesson</button>
                 </div>
             </details>
 
@@ -294,7 +347,7 @@
                     <textarea id="skills-ideas" name="skills-ideas" placeholder="Brainstorm ideas..."></textarea>
                     <h4 class="font-semibold mt-4 mb-2">Planned Service/Activities:</h4>
                     <div id="activities-list"></div>
-                    <button type="button" onclick="addActivity()" class="btn-secondary text-sm"><i class="fas fa-plus mr-1"></i> Add Activity</button>
+                    <button type="button" onclick="addActivity()" class="btn-secondary text-sm" aria-label="Add a new activity"><i class="fas fa-plus mr-1"></i> Add Activity</button>
                 </div>
             </details>
 
@@ -335,33 +388,43 @@
             </details>
 
             <div class="mt-8 flex flex-wrap justify-center gap-4" id="desktop-buttons">
-                <button type="button" id="save-button" class="btn-primary"><i class="fas fa-save mr-1"></i> Save Agenda</button>
-                <button type="button" id="generate-next-button" class="btn-primary"><i class="fas fa-arrow-right mr-1"></i> Next Agenda</button>
-                <button type="button" id="export-pdf-button" class="btn-primary"><i class="fas fa-file-pdf mr-1"></i> Export as PDF</button>
-                <button type="button" id="export-json-button" class="btn-primary"><i class="fas fa-download mr-1"></i> Export as JSON</button>
-                <label class="btn-primary flex items-center cursor-pointer">
-                    <i class="fas fa-upload mr-1"></i> Import JSON
-                    <input type="file" id="import-json-button" accept=".json" class="hidden">
-                </label>
-                <button type="button" id="clear-button" class="btn-secondary"><i class="fas fa-eraser mr-1"></i> Clear Form</button>
+                <button type="button" id="save-button" class="btn-primary" aria-label="Save the current agenda"><i class="fas fa-save mr-1"></i> Save Agenda</button>
+                <button type="button" id="create-new-button" class="btn-success" aria-label="Create a new agenda"><i class="fas fa-plus mr-1"></i> Create New Agenda</button>
+                <button type="button" id="export-pdf-button" class="btn-primary" aria-label="Export agenda as PDF"><i class="fas fa-file-pdf mr-1"></i> Export as PDF</button>
+                <button type="button" id="clear-button" class="btn-secondary" aria-label="Clear the form"><i class="fas fa-eraser mr-1"></i> Clear Form</button>
             </div>
         </form>
 
         <div id="action-buttons" class="hidden sm:hidden">
-            <button type="button" id="mobile-save-button" class="btn-primary"><i class="fas fa-save"></i></button>
-            <button type="button" id="mobile-generate-next-button" class="btn-primary"><i class="fas fa-arrow-right"></i></button>
-            <button type="button" id="mobile-export-pdf-button" class="btn-primary"><i class="fas fa-file-pdf"></i></button>
-            <button type="button" id="mobile-clear-button" class="btn-secondary"><i class="fas fa-eraser"></i></button>
+            <button type="button" id="mobile-save-button" class="btn-primary" title="Save Agenda" aria-label="Save the current agenda"><i class="fas fa-save"></i></button>
+            <button type="button" id="mobile-create-new-button" class="btn-success" title="Create New Agenda" aria-label="Create a new agenda"><i class="fas fa-plus"></i></button>
+            <button type="button" id="mobile-export-pdf-button" class="btn-primary" title="Export as PDF" aria-label="Export agenda as PDF"><i class="fas fa-file-pdf"></i></button>
+            <button type="button" id="mobile-clear-button" class="btn-secondary" title="Clear Form" aria-label="Clear the form"><i class="fas fa-eraser"></i></button>
         </div>
     </div>
 
-    <div id="message-box"></div>
+    <div id="load-modal">
+        <div id="load-modal-content">
+            <h2 class="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Load Past Agenda</h2>
+            <div class="flex mb-4">
+                <select id="load-agenda" class="flex-grow">
+                    <option value="">-- Select an Agenda --</option>
+                </select>
+                <button id="load-button" class="btn-primary ml-2" aria-label="Load selected agenda">Load</button>
+            </div>
+            <button id="close-modal-button" class="btn-secondary w-full" aria-label="Close modal">Close</button>
+        </div>
+    </div>
+
+    <div id="message-box"><i id="message-icon" class="fas"></i><span id="message-text"></span></div>
 
     <script>
         const { jsPDF } = window.jspdf || {};
         const form = document.getElementById('agenda-form');
         const loadAgendaSelect = document.getElementById('load-agenda');
         const messageBox = document.getElementById('message-box');
+        const messageIcon = document.getElementById('message-icon');
+        const messageText = document.getElementById('message-text');
         let messageTimeout;
         let ministeringAssignmentCount = 0;
         let lessonCount = 0;
@@ -377,14 +440,26 @@
         }
 
         // Show Message
-        function showMessage(message, duration = 3000) {
-            console.log('Showing message:', message);
-            messageBox.textContent = message;
+        function showMessage(message, isError = false, duration = 4000) {
+            console.log(`${isError ? 'Error' : 'Message'}: ${message}`);
+            messageText.textContent = message;
+            messageIcon.className = `fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}`;
+            messageBox.classList.remove('error');
+            if (isError) messageBox.classList.add('error');
             messageBox.classList.add('show');
             clearTimeout(messageTimeout);
             messageTimeout = setTimeout(() => {
                 messageBox.classList.remove('show');
             }, duration);
+        }
+
+        // Modal Handling
+        function openLoadModal() {
+            document.getElementById('load-modal').style.display = 'flex';
+            populateLoadAgendaDropdown();
+        }
+        function closeLoadModal() {
+            document.getElementById('load-modal').style.display = 'none';
         }
 
         // Get Saved Agenda Keys
@@ -437,13 +512,14 @@
             clearDynamicLists();
             document.getElementById('previous-assignments-display').style.display = 'none';
             localStorage.removeItem('agenda_draft');
-            showMessage('Form cleared', 1500);
+            resetValidation();
+            showMessage('Form cleared');
         }
 
         // Sanitize Input
         function sanitizeInput(value) {
             const div = document.createElement('div');
-            div.textContent = value;
+            div.textContent = value || '';
             return div.innerHTML;
         }
 
@@ -456,7 +532,7 @@
             div.className = 'dynamic-item ministering-assignment-item';
             div.id = `min-assign-${ministeringAssignmentCount}`;
             div.innerHTML = `
-                <button type="button" class="btn-danger remove-btn" onclick="removeItem('min-assign-${ministeringAssignmentCount}')"><i class="fas fa-times"></i></button>
+                <button type="button" class="btn-danger remove-btn" onclick="removeItem('min-assign-${ministeringAssignmentCount}')" aria-label="Remove assignment"><i class="fas fa-times"></i></button>
                 <div class="grid grid-cols-1 gap-4">
                     <div>
                         <label for="min-task-${ministeringAssignmentCount}" class="text-sm font-medium">Task:</label>
@@ -476,13 +552,12 @@
                 </div>
             `;
             list.appendChild(div);
-            // Attach event listeners to new inputs
             div.querySelectorAll('input, select').forEach(input => {
                 input.addEventListener('input', triggerAutosave);
                 input.addEventListener('change', triggerAutosave);
             });
             triggerAutosave();
-            showMessage('Assignment added', 1500);
+            showMessage('Assignment added');
         }
 
         // Add Lesson
@@ -493,7 +568,7 @@
             div.className = 'dynamic-item lesson-item';
             div.id = `lesson-${lessonCount}`;
             div.innerHTML = `
-                <button type="button" class="btn-danger remove-btn" onclick="removeItem('lesson-${lessonCount}')"><i class="fas fa-times"></i></button>
+                <button type="button" class="btn-danger remove-btn" onclick="removeItem('lesson-${lessonCount}')" aria-label="Remove lesson"><i class="fas fa-times"></i></button>
                 <div class="grid grid-cols-1 gap-4">
                     <div>
                         <label for="lesson-date-${lessonCount}" class="text-sm font-medium">Date:</label>
@@ -521,7 +596,7 @@
             div.className = 'dynamic-item activity-item';
             div.id = `activity-${activityCount}`;
             div.innerHTML = `
-                <button type="button" class="btn-danger remove-btn" onclick="removeItem('activity-${activityCount}')"><i class="fas fa-times"></i></button>
+                <button type="button" class="btn-danger remove-btn" onclick="removeItem('activity-${activityCount}')" aria-label="Remove activity"><i class="fas fa-times"></i></button>
                 <div class="grid grid-cols-1 gap-4">
                     <div>
                         <label for="activity-date-${activityCount}" class="text-sm font-medium">Date:</label>
@@ -551,7 +626,7 @@
             if (item) {
                 item.remove();
                 triggerAutosave();
-                showMessage('Item removed', 1500);
+                showMessage('Item removed');
             }
         }
 
@@ -654,7 +729,7 @@
                         div.className = 'pending-item';
                         div.innerHTML = `
                             <span><i class="fas fa-tasks mr-2"></i>${sanitizeInput(item.task)} (Assigned to: ${sanitizeInput(item.assignedTo || 'N/A')})</span>
-                            <button type="button" class="btn-success" onclick="markPendingDone('${sanitizeInput(data['meeting-date'])}', ${index})"><i class="fas fa-check mr-1"></i>Mark as Done</button>
+                            <button type="button" class="btn-success" onclick="markPendingDone('${sanitizeInput(data['meeting-date'])}', ${index})" aria-label="Mark assignment as done"><i class="fas fa-check mr-1"></i>Mark as Done</button>
                         `;
                         pendingItemsList.appendChild(div);
                         hasPendingItems = true;
@@ -674,13 +749,13 @@
                     data.ministeringAssignments[index].status = 'Done';
                     localStorage.setItem(key, JSON.stringify(data));
                     updatePendingItems(data);
-                    showMessage('Assignment marked as done.', 2000);
+                    showMessage('Assignment marked as done.');
                 } else {
-                    showMessage('Assignment not found.', 3000);
+                    showMessage('Assignment not found.', true);
                 }
             } catch (e) {
                 console.error('Error updating pending item:', e);
-                showMessage('Error updating assignment.', 3000);
+                showMessage('Error updating assignment.', true);
             }
         }
 
@@ -688,10 +763,44 @@
         function validateForm(data) {
             console.log('Validating form data:', data);
             const errors = [];
-            if (!data['meeting-date']) errors.push('Meeting Date is required.');
-            if (!data['conducting']) errors.push('Conducting person is required.');
-            if (!data['opening-prayer']) errors.push('Opening Prayer person is required.');
+            const fields = [
+                { id: 'meeting-date', name: 'Meeting Date' },
+                { id: 'conducting', name: 'Conducting' },
+                { id: 'opening-prayer', name: 'Opening Prayer' },
+            ];
+            fields.forEach(field => {
+                if (!data[field.id]) {
+                    errors.push(`${field.name} is required.`);
+                }
+            });
             return errors;
+        }
+
+        // Reset Validation UI
+        function resetValidation() {
+            const fields = ['meeting-date', 'conducting', 'opening-prayer'];
+            fields.forEach(id => {
+                const input = document.getElementById(id);
+                const error = document.getElementById(`${id}-error`);
+                input.classList.remove('error-border');
+                error.classList.add('hidden');
+            });
+        }
+
+        // Show Validation Errors
+        function showValidationErrors(errors) {
+            resetValidation();
+            errors.forEach(error => {
+                const fieldId = error.includes('Meeting Date') ? 'meeting-date' :
+                               error.includes('Conducting') ? 'conducting' :
+                               error.includes('Opening Prayer') ? 'opening-prayer' : null;
+                if (fieldId) {
+                    const input = document.getElementById(fieldId);
+                    const errorEl = document.getElementById(`${fieldId}-error`);
+                    input.classList.add('error-border');
+                    errorEl.classList.remove('hidden');
+                }
+            });
         }
 
         // Save Agenda
@@ -700,7 +809,8 @@
             const data = getFormData();
             const errors = validateForm(data);
             if (errors.length > 0) {
-                showMessage(errors.join(' '), 4000);
+                showValidationErrors(errors);
+                showMessage(errors.join(' '), true);
                 return;
             }
             const key = `agenda_${data['meeting-date']}`;
@@ -708,10 +818,10 @@
                 localStorage.setItem(key, JSON.stringify(data));
                 localStorage.removeItem('agenda_draft');
                 showMessage(`Agenda for ${data['meeting-date']} saved successfully!`);
-                populateLoadAgendaDropdown();
+                resetValidation();
             } catch (e) {
                 console.error('Error saving to localStorage:', e);
-                showMessage('Error saving agenda. Storage might be full.', 4000);
+                showMessage('Error saving agenda. Storage might be full.', true);
             }
         }
 
@@ -724,10 +834,10 @@
                 if (data['meeting-date']) {
                     try {
                         localStorage.setItem('agenda_draft', JSON.stringify(data));
-                        showMessage('Draft saved', 1500);
+                        showMessage('Draft saved');
                     } catch (e) {
                         console.error('Error autosaving draft:', e);
-                        showMessage('Error saving draft.', 3000);
+                        showMessage('Error saving draft.', true);
                     }
                 }
             }, 1000);
@@ -738,7 +848,7 @@
             console.log('Loading agenda');
             const selectedKey = loadAgendaSelect.value;
             if (!selectedKey) {
-                showMessage('Please select an agenda to load.', 2000);
+                showMessage('Please select an agenda to load.', true);
                 return;
             }
             try {
@@ -747,22 +857,24 @@
                     const data = JSON.parse(dataString);
                     populateForm(data, false);
                     showMessage(`Loaded agenda: ${selectedKey.replace('agenda_', '')}`);
+                    closeLoadModal();
                 } else {
-                    showMessage('Could not find saved data for this agenda.', 3000);
+                    showMessage('Could not find saved data for this agenda.', true);
                 }
             } catch (e) {
                 console.error('Error loading agenda:', e);
-                showMessage('Error loading agenda.', 3000);
+                showMessage('Error loading agenda.', true);
             }
         }
 
-        // Generate Next Agenda
-        function generateNextAgenda() {
-            console.log('Generating next agenda');
+        // Create New Agenda
+        function createNewAgenda() {
+            console.log('Creating new agenda');
             const currentData = getFormData();
             const errors = validateForm(currentData);
             if (errors.length > 0) {
-                showMessage('Please complete required fields before starting next agenda.', 4000);
+                showValidationErrors(errors);
+                showMessage('Please complete required fields before creating a new agenda.', true);
                 return;
             }
             clearForm();
@@ -782,7 +894,7 @@
                 }
             }
             updatePendingItems(currentData);
-            showMessage('Form prepared for next agenda. Pending items added to Follow-Up.', 4000);
+            showMessage('New agenda created. Pending items added to Follow-Up.');
             document.querySelector('details:nth-of-type(2)').open = true;
         }
 
@@ -790,13 +902,14 @@
         function exportAsPDF() {
             console.log('Exporting as PDF');
             if (!jsPDF) {
-                showMessage('PDF library not loaded. Please try again.', 4000);
+                showMessage('PDF library not loaded. Please try again.', true);
                 return;
             }
             const data = getFormData();
             const errors = validateForm(data);
             if (errors.length > 0) {
-                showMessage('Please complete required fields before exporting.', 4000);
+                showValidationErrors(errors);
+                showMessage('Please complete required fields before exporting.', true);
                 return;
             }
             try {
@@ -805,7 +918,6 @@
                 const pageHeight = doc.internal.pageSize.height;
                 const maxWidth = 180;
 
-                // Helper function to add text and handle pagination
                 function addText(text, x, y, options = {}) {
                     if (y > pageHeight - 20) {
                         doc.addPage();
@@ -842,55 +954,11 @@
                 y = addText(`Closing Prayer: ${data['closing-prayer'] || 'N/A'}`, 10, y);
 
                 doc.save(`Agenda_${data['meeting-date'] || 'untitled'}.pdf`);
-                showMessage('Agenda exported as PDF.', 2000);
+                showMessage('Agenda exported as PDF.');
             } catch (e) {
                 console.error('Error exporting PDF:', e);
-                showMessage('Error exporting PDF.', 4000);
+                showMessage('Error exporting PDF.', true);
             }
-        }
-
-        // Export as JSON
-        function exportAsJSON() {
-            console.log('Exporting as JSON');
-            const data = getFormData();
-            const errors = validateForm(data);
-            if (errors.length > 0) {
-                showMessage('Please complete required fields before exporting.', 4000);
-                return;
-            }
-            try {
-                const jsonStr = JSON.stringify(data, null, 2);
-                const blob = new Blob([jsonStr], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `Agenda_${data['meeting-date'] || 'untitled'}.json`;
-                a.click();
-                URL.revokeObjectURL(url);
-                showMessage('Agenda exported as JSON.', 2000);
-            } catch (e) {
-                console.error('Error exporting JSON:', e);
-                showMessage('Error exporting JSON.', 4000);
-            }
-        }
-
-        // Import JSON
-        function importJSON(event) {
-            console.log('Importing JSON');
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    populateForm(data);
-                    showMessage('Agenda imported successfully.', 2000);
-                } catch (e) {
-                    console.error('Error parsing JSON file:', e);
-                    showMessage('Error importing agenda. Invalid JSON file.', 3000);
-                }
-            };
-            reader.readAsText(file);
         }
 
         // Accordion Behavior
@@ -911,23 +979,22 @@
         // Event Listeners
         document.getElementById('save-button').addEventListener('click', saveAgenda);
         document.getElementById('mobile-save-button').addEventListener('click', saveAgenda);
-        document.getElementById('load-button').addEventListener('click', loadAgenda);
-        document.getElementById('generate-next-button').addEventListener('click', generateNextAgenda);
-        document.getElementById('mobile-generate-next-button').addEventListener('click', generateNextAgenda);
+        document.getElementById('create-new-button').addEventListener('click', createNewAgenda);
+        document.getElementById('mobile-create-new-button').addEventListener('click', createNewAgenda);
         document.getElementById('export-pdf-button').addEventListener('click', exportAsPDF);
         document.getElementById('mobile-export-pdf-button').addEventListener('click', exportAsPDF);
-        document.getElementById('export-json-button').addEventListener('click', exportAsJSON);
-        document.getElementById('import-json-button').addEventListener('change', importJSON);
         document.getElementById('clear-button').addEventListener('click', clearForm);
         document.getElementById('mobile-clear-button').addEventListener('click', clearForm);
         document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+        document.getElementById('view-past-button').addEventListener('click', openLoadModal);
+        document.getElementById('load-button').addEventListener('click', loadAgenda);
+        document.getElementById('close-modal-button').addEventListener('click', closeLoadModal);
         form.addEventListener('input', triggerAutosave);
         form.addEventListener('change', triggerAutosave);
 
         // Initial Setup
         window.addEventListener('load', () => {
             console.log('Initializing app');
-            populateLoadAgendaDropdown();
             const today = new Date();
             const year = today.getFullYear();
             const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -935,6 +1002,7 @@
             if (!form.elements['meeting-date'].value) {
                 form.elements['meeting-date'].value = `${year}-${month}-${day}`;
             }
+            document.getElementById('meeting-date').focus();
             document.getElementById('previous-assignments-display').style.display = 'none';
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'dark') {
@@ -946,7 +1014,7 @@
                 try {
                     const data = JSON.parse(draft);
                     populateForm(data);
-                    showMessage('Loaded draft from last session.', 2000);
+                    showMessage('Loaded draft from last session.');
                 } catch (e) {
                     console.error('Error loading draft:', e);
                 }
