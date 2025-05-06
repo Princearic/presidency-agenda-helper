@@ -5,12 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Presidency Agenda Helper</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --accent-color: #4f46e5;
+            --accent-color-light: #6366f1;
+            --accent-color-dark: #4338ca;
+        }
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
@@ -21,7 +25,7 @@
         summary {
             cursor: pointer;
             padding: 1rem;
-            background-color: #4f46e5;
+            background-color: var(--accent-color);
             color: white;
             font-weight: 600;
             border-radius: 0.5rem;
@@ -33,13 +37,13 @@
             transition: background-color 0.2s ease-in-out;
         }
         .dark summary {
-            background-color: #6366f1;
+            background-color: var(--accent-color-light);
         }
         summary:hover {
-            background-color: #4338ca;
+            background-color: var(--accent-color-dark);
         }
         .dark summary:hover {
-            background-color: #4f46e5;
+            background-color: var(--accent-color);
         }
         summary::after {
             content: '\f078';
@@ -71,12 +75,20 @@
         textarea,
         select {
             width: 100%;
-            padding: 0.75rem;
+            padding: 0.75rem 1rem;
             border: 1px solid #d1d5db;
             border-radius: 0.5rem;
             margin-top: 0.25rem;
             margin-bottom: 0.5rem;
             font-size: 1rem;
+        }
+        input[type="text"]:focus,
+        input[type="date"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
         }
         .dark input[type="text"],
         .dark input[type="date"],
@@ -85,6 +97,13 @@
             background-color: #4b5563;
             border-color: #6b7280;
             color: white;
+        }
+        .dark input[type="text"]:focus,
+        .dark input[type="date"]:focus,
+        .dark textarea:focus,
+        .dark select:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
         }
         input[type="checkbox"] {
             width: 1.25rem;
@@ -122,9 +141,6 @@
             min-width: 48px;
             min-height: 48px;
         }
-        button:hover {
-            transform: scale(1.05);
-        }
         .btn-primary {
             background-color: #4f46e5;
             color: white;
@@ -142,31 +158,65 @@
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
         .btn-secondary {
-            background-color: #6b7280;
+            background-image: linear-gradient(to right, var(--accent-color), var(--accent-color-light));
             color: white;
+            padding: 1rem 2rem;
+            transition: transform 0.2s ease-in-out;
         }
-        .btn-secondary:hover {
-            background-color: #4b5563;
+        .btn-secondary:hover,
+        .btn-secondary:active {
+            background-image: linear-gradient(to right, var(--accent-color-dark), var(--accent-color));
+            transform: scale(1.05);
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
-        .btn-danger {
-            background-color: #ef4444;
-            color: white;
-            padding: 0.5rem;
-            font-size: 0.875rem;
+        .dark .btn-secondary {
+            background-image: linear-gradient(to right, var(--accent-color-light), var(--accent-color));
         }
-        .btn-danger:hover {
-            background-color: #dc2626;
+        .dark .btn-secondary:hover,
+        .dark .btn-secondary:active {
+            background-image: linear-gradient(to right, var(--accent-color), var(--accent-color-dark));
+            transform: scale(1.05);
+        }
+        .btn-danger {
+            background-image: linear-gradient(to right, var(--accent-color), var(--accent-color-light));
+            color: white;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.875rem;
+            transition: transform 0.2s ease-in-out;
+        }
+        .btn-danger:hover,
+        .btn-danger:active {
+            background-image: linear-gradient(to right, var(--accent-color-dark), var(--accent-color));
+            transform: scale(1.05);
+        }
+        .dark .btn-danger {
+            background-image: linear-gradient(to right, var(--accent-color-light), var(--accent-color));
+        }
+        .dark .btn-danger:hover,
+        .dark .btn-danger:active {
+            background-image: linear-gradient(to right, var(--accent-color), var(--accent-color-dark));
+            transform: scale(1.05);
         }
         .btn-edit {
-            background-color: #6b7280;
+            background-image: linear-gradient(to right, var(--accent-color), var(--accent-color-light));
             color: white;
-            padding: 0.5rem;
+            padding: 0.75rem 1.25rem;
             font-size: 0.875rem;
             margin-left: 0.5rem;
+            transition: transform 0.2s ease-in-out;
         }
-        .btn-edit:hover {
-            background-color: #4b5563;
+        .btn-edit:hover,
+        .btn-edit:active {
+            background-image: linear-gradient(to right, var(--accent-color-dark), var(--accent-color));
+            transform: scale(1.05);
+        }
+        .dark .btn-edit {
+            background-image: linear-gradient(to right, var(--accent-color-light), var(--accent-color));
+        }
+        .dark .btn-edit:hover,
+        .dark .btn-edit:active {
+            background-image: linear-gradient(to right, var(--accent-color), var(--accent-color-dark));
+            transform: scale(1.05);
         }
         .dynamic-item {
             display: flex;
@@ -186,6 +236,29 @@
         }
         .dark .checked-item {
             color: #6b7280;
+        }
+        .assigned-name {
+            color: #2563eb;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .assigned-name:hover {
+            text-decoration: underline;
+        }
+        .assigned-name:active {
+            background-color: #dbeafe;
+        }
+        .dark .assigned-name {
+            color: #60a5fa;
+        }
+        .dark .assigned-name:active {
+            background-color: #1e40af;
+        }
+        #previous-assignments-display h4 {
+            color: #1f2937;
+            font-weight: 600;
+        }
+        .dark #previous-assignments-display h4 {
+            color: #d1d5db;
         }
         #message-box {
             position: fixed;
@@ -217,7 +290,7 @@
             left: 0;
             right: 0;
             background-color: white;
-            padding: 1rem;
+            padding: 0.5rem;
             box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
             z-index: 50;
             display: none;
@@ -258,6 +331,7 @@
                 max-width: 100%;
                 padding-left: 1rem;
                 padding-right: 1rem;
+                padding-bottom: 5rem;
             }
             button[title]:hover::after {
                 content: attr(title);
@@ -273,28 +347,31 @@
                 white-space: nowrap;
             }
         }
+        @media (min-width: 640px) {
+            .max-w-2xl {
+                padding-bottom: 2rem;
+            }
+        }
     </style>
 </head>
 <body class="p-4 sm:p-6">
     <div class="max-w-2xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Presidency Meeting Agenda</h1>
-            <button id="theme-toggle" class="btn-secondary" title="Toggle Dark Mode" aria-label="Toggle dark mode">
-                <i class="fas fa-moon"></i>
-            </button>
+            <div class="flex items-center gap-2">
+                <input type="color" id="theme-color-picker" title="Choose Theme Color" aria-label="Choose theme color" class="w-10 h-10 rounded-full cursor-pointer">
+                <button id="theme-toggle" class="btn-secondary" title="Toggle Dark Mode" aria-label="Toggle dark mode">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
         </div>
 
         <div class="mb-6">
             <button id="view-past-button" class="btn-secondary" aria-label="View past agendas"><i class="fas fa-history mr-1"></i> View Past Agendas</button>
         </div>
 
-        <div class="mb-6 flex items-center">
-            <label for="accordion-toggle" class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2">Accordion Mode (Mobile):</label>
-            <input type="checkbox" id="accordion-toggle" checked class="h-5 w-5">
-        </div>
-
         <form id="agenda-form">
-            <details class="mb-4" open>
+            <details id="meeting-details" class="mb-4">
                 <summary aria-label="Meeting Details section with calendar icon"><span class="summary-icon"><i class="fas fa-calendar-alt"></i></span>Meeting Details</summary>
                 <div class="space-y-4">
                     <div>
@@ -315,7 +392,7 @@
                 </div>
             </details>
 
-            <details class="mb-4">
+            <details id="follow-up" class="mb-4">
                 <summary aria-label="Follow-Up section with check circle icon"><span class="summary-icon"><i class="fas fa-check-circle"></i></span>Follow-Up</summary>
                 <div class="space-y-4">
                     <div id="previous-assignments-display" class="text-gray-800 dark:text-white">
@@ -324,10 +401,11 @@
                         <h4 class="font-semibold mt-4 mb-2">Assignments from Previous Meeting:</h4>
                         <ul id="previous-items-list" class="list-none pl-5" aria-label="Assignments from previous meeting"></ul>
                     </div>
+                    <button type="button" id="clear-follow-up-button" class="btn-secondary text-sm" aria-label="Clear completed follow-up items"><i class="fas fa-trash mr-1"></i> Clear Completed</button>
                 </div>
             </details>
 
-            <details class="mb-4">
+            <details id="ministering" class="mb-4">
                 <summary aria-label="Ministering section with helping hands icon"><span class="summary-icon"><i class="fas fa-hands-helping"></i></span>Ministering</summary>
                 <div>
                     <label for="ministering-discussion">How can we invite and help our quorum or class come unto Christ? Support them and others?</label>
@@ -338,7 +416,7 @@
                 </div>
             </details>
 
-            <details class="mb-4">
+            <details id="sunday" class="mb-4">
                 <summary aria-label="Sunday Quorum/Class Meetings section with open book icon"><span class="summary-icon"><i class="fas fa-book-open"></i></span>Sunday Quorum/Class Meetings</summary>
                 <div>
                     <label for="sunday-discussion">What to discuss with quorum/class members? (Ref: "Counsel Together")</label>
@@ -349,7 +427,7 @@
                 </div>
             </details>
 
-            <details class="mb-4">
+            <details id="service" class="mb-4">
                 <summary aria-label="Service & Activities section with tools icon"><span class="summary-icon"><i class="fas fa-tools"></i></span>Service & Activities</summary>
                 <div>
                     <label for="skills-ideas">Skills to learn/develop? How to serve others?</label>
@@ -360,7 +438,7 @@
                 </div>
             </details>
 
-            <details class="mb-4">
+            <details id="other" class="mb-4">
                 <summary aria-label="Other Discussion Items section with comments icon"><span class="summary-icon"><i class="fas fa-comments"></i></span>Other Discussion Items</summary>
                 <div class="space-y-4">
                     <div>
@@ -374,7 +452,7 @@
                 </div>
             </details>
 
-            <details class="mb-4">
+            <details id="leadership" class="mb-4">
                 <summary aria-label="Leadership Instruction section with teacher icon"><span class="summary-icon"><i class="fas fa-chalkboard-teacher"></i></span>Leadership Instruction</summary>
                 <div>
                     <label for="leadership-instruction">Notes from Bishopric Member or Adult Adviser:</label>
@@ -382,8 +460,8 @@
                 </div>
             </details>
 
-            <details class="mb-4">
-                <summary aria-label="Review & Closing section with checkered flag icon"><span class="summary-icon"><i class="fas fa-flag-checkered"></i></span>Review & Closing</summary>
+            <details id="review" class="mb-4">
+                <summary aria-label="Review & Closing section with bullet list icon"><span class="summary-icon"><i class="fas fa-list-ul"></i></span>Review & Closing</summary>
                 <div class="space-y-4">
                     <div>
                         <h4 class="font-semibold mb-2">Items for Review:</h4>
@@ -456,7 +534,7 @@
 
         // Date Formatting
         function formatDate(dateStr) {
-            if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+            if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return "";
             const [year, month, day] = dateStr.split('-');
             return `${day}/${month}/${year}`;
         }
@@ -467,6 +545,45 @@
             const isDark = document.documentElement.classList.contains('dark');
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
             document.getElementById('theme-toggle').innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        }
+
+        // Theme Color Handling
+        function darkenColor(hex, percent) {
+            hex = hex.replace('#', '');
+            const r = parseInt(hex.substring(0, 2), 16);
+            const g = parseInt(hex.substring(2, 4), 16);
+            const b = parseInt(hex.substring(4, 6), 16);
+            const factor = (100 - percent) / 100;
+            const newR = Math.round(r * factor);
+            const newG = Math.round(g * factor);
+            const newB = Math.round(b * factor);
+            return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
+        }
+
+        function updateThemeColor(color) {
+            const root = document.documentElement;
+            root.style.setProperty('--accent-color', color);
+            root.style.setProperty('--accent-color-light', darkenColor(color, -20));
+            root.style.setProperty('--accent-color-dark', darkenColor(color, 10));
+            localStorage.setItem('themeColor', color);
+        }
+
+        // Accordion State Handling
+        function saveAccordionStates() {
+            const states = {};
+            document.querySelectorAll('details').forEach(d => {
+                states[d.id] = d.open;
+            });
+            localStorage.setItem('accordionStates', JSON.stringify(states));
+        }
+
+        function applyAccordionStates() {
+            const states = JSON.parse(localStorage.getItem('accordionStates') || '{}');
+            document.querySelectorAll('details').forEach(d => {
+                if (states[d.id] !== undefined) {
+                    d.open = states[d.id];
+                }
+            });
         }
 
         // Show Message
@@ -488,6 +605,7 @@
             document.getElementById('load-modal').style.display = 'flex';
             populateLoadAgendaDropdown();
         }
+
         function closeLoadModal() {
             document.getElementById('load-modal').style.display = 'none';
         }
@@ -558,6 +676,7 @@
             document.getElementById('item-modal').style.display = 'flex';
             document.getElementById('item-modal-error').classList.add('hidden');
         }
+
         function closeItemModal() {
             document.getElementById('item-modal').style.display = 'none';
             currentModalType = '';
@@ -663,7 +782,7 @@
             li.className = 'dynamic-item';
             li.id = `min-assign-${ministeringAssignmentCount}`;
             li.innerHTML = `
-                <span>Task: ${sanitizeInput(task)} ${assignedTo ? `(Assigned to: ${sanitizeInput(assignedTo)}, Status: ${status})` : `(Status: ${status})`}</span>
+                <span>Task: ${sanitizeInput(task)} ${assignedTo ? `(Assigned to: <span class="assigned-name">${sanitizeInput(assignedTo)}</span>, Status: ${status})` : `(Status: ${status})`}</span>
                 <button type="button" class="btn-edit" onclick="openItemModal('assignment', ${ministeringAssignmentCount - 1})" aria-label="Edit assignment"><i class="fas fa-edit"></i></button>
                 <button type="button" class="btn-danger" onclick="removeItem('min-assign-${ministeringAssignmentCount}')" aria-label="Remove assignment"><i class="fas fa-times"></i></button>
             `;
@@ -682,7 +801,7 @@
             li.className = 'dynamic-item';
             li.id = `lesson-${lessonCount}`;
             li.innerHTML = `
-                <span>Lesson - Date: ${sanitizeInput(date ? formatDate(date) : '')}, Teacher: ${sanitizeInput(name)}</span>
+                <span>Lesson - Date: ${sanitizeInput(formatDate(date))}, Teacher: <span class="assigned-name">${sanitizeInput(name)}</span></span>
                 <button type="button" class="btn-edit" onclick="openItemModal('lesson', ${lessonCount - 1})" aria-label="Edit lesson"><i class="fas fa-edit"></i></button>
                 <button type="button" class="btn-danger" onclick="removeItem('lesson-${lessonCount}')" aria-label="Remove lesson"><i class="fas fa-times"></i></button>
             `;
@@ -701,7 +820,7 @@
             li.className = 'dynamic-item';
             li.id = `activity-${activityCount}`;
             li.innerHTML = `
-                <span>Activity - Date: ${sanitizeInput(date ? formatDate(date) : '')}, Description: ${sanitizeInput(description)}${assignedTo ? `, Assigned to: ${sanitizeInput(assignedTo)}` : ''}</span>
+                <span>Activity - Date: ${sanitizeInput(formatDate(date))}, Description: ${sanitizeInput(description)}${assignedTo ? `, Assigned to: <span class="assigned-name">${sanitizeInput(assignedTo)}</span>` : ''}</span>
                 <button type="button" class="btn-edit" onclick="openItemModal('activity', ${activityCount - 1})" aria-label="Edit activity"><i class="fas fa-edit"></i></button>
                 <button type="button" class="btn-danger" onclick="removeItem('activity-${activityCount}')" aria-label="Remove activity"><i class="fas fa-times"></i></button>
             `;
@@ -723,7 +842,7 @@
                     confirmed: formData.ministeringAssignments[index].confirmed || false,
                 };
                 const li = document.getElementById(`min-assign-${index + 1}`);
-                li.querySelector('span').textContent = `Task: ${sanitizeInput(data.task)} ${data.assignedTo ? `(Assigned to: ${sanitizeInput(data.assignedTo)}, Status: ${data.status})` : `(Status: ${data.status})`}`;
+                li.querySelector('span').innerHTML = `Task: ${sanitizeInput(data.task)} ${data.assignedTo ? `(Assigned to: <span class="assigned-name">${sanitizeInput(data.assignedTo)}</span>, Status: ${data.status})` : `(Status: ${data.status})`}`;
                 showMessage('Assignment updated');
             } else if (type === 'lesson' && formData.lessons[index]) {
                 formData.lessons[index] = {
@@ -732,7 +851,7 @@
                     confirmed: formData.lessons[index].confirmed || false,
                 };
                 const li = document.getElementById(`lesson-${index + 1}`);
-                li.querySelector('span').textContent = `Lesson - Date: ${sanitizeInput(data.date ? formatDate(data.date) : '')}, Teacher: ${sanitizeInput(data.name)}`;
+                li.querySelector('span').innerHTML = `Lesson - Date: ${sanitizeInput(formatDate(data.date))}, Teacher: <span class="assigned-name">${sanitizeInput(data.name)}</span>`;
                 showMessage('Lesson updated');
             } else if (type === 'activity' && formData.activities[index]) {
                 formData.activities[index] = {
@@ -742,7 +861,7 @@
                     confirmed: formData.activities[index].confirmed || false,
                 };
                 const li = document.getElementById(`activity-${index + 1}`);
-                li.querySelector('span').textContent = `Activity - Date: ${sanitizeInput(data.date ? formatDate(data.date) : '')}, Description: ${sanitizeInput(data.description)}${data.assignedTo ? `, Assigned to: ${sanitizeInput(data.assignedTo)}` : ''}`;
+                li.querySelector('span').innerHTML = `Activity - Date: ${sanitizeInput(formatDate(data.date))}, Description: ${sanitizeInput(data.description)}${data.assignedTo ? `, Assigned to: <span class="assigned-name">${sanitizeInput(data.assignedTo)}</span>` : ''}`;
                 showMessage('Activity updated');
             }
             triggerAutosave();
@@ -759,6 +878,21 @@
                 updateReviewItems();
                 showMessage('Item removed');
             }
+        }
+
+        // Clear Completed Follow-Ups
+        function clearCompletedFollowUps() {
+            console.log('Clearing completed follow-ups');
+            const formData = getFormData();
+            const checkboxes = document.querySelectorAll('#previous-ideas-list input[type="checkbox"]:checked, #previous-items-list input[type="checkbox"]:checked');
+            checkboxes.forEach(checkbox => {
+                delete formData.followUpStatus[checkbox.dataset.id];
+                checkbox.closest('li').remove();
+            });
+            localStorage.setItem('agenda_draft', JSON.stringify(formData));
+            updatePreviousIdeas();
+            updatePreviousItems();
+            showMessage('Completed follow-ups cleared');
         }
 
         // Get Form Data
@@ -802,8 +936,9 @@
                     const text = li.querySelector('span').textContent;
                     const match = text.match(/Lesson - Date: (.*?), Teacher: (.*)/);
                     if (match) {
+                        const dateRaw = match[1] === '' ? '' : match[1].split('/').reverse().join('-');
                         data.lessons.push({
-                            date: match[1] === '' ? '' : match[1].split('/').reverse().join('-'),
+                            date: dateRaw,
                             name: match[2],
                             confirmed: true,
                         });
@@ -818,8 +953,9 @@
                     const descMatch = text.match(/Description: (.*?)(?:, Assigned to|$)/);
                     const dateMatch = text.match(/Date: (.*?)(?:, Description|$)/);
                     if (descMatch) {
+                        const dateRaw = dateMatch && dateMatch[1] !== '' ? dateMatch[1].split('/').reverse().join('-') : '';
                         data.activities.push({
-                            date: dateMatch && dateMatch[1] !== '' ? dateMatch[1].split('/').reverse().join('-') : '',
+                            date: dateRaw,
                             description: descMatch[1],
                             assignedTo: assignedMatch ? assignedMatch[1] : '',
                             confirmed: true,
@@ -899,7 +1035,7 @@
                         li.innerHTML = `
                             <label class="flex items-center">
                                 <input type="checkbox" data-id="${dataId}" ${isChecked ? 'checked' : ''} aria-label="Check off assignment: ${assign.task}">
-                                <span class="${isChecked ? 'checked-item' : ''}">Task: ${sanitizeInput(assign.task)} ${assign.assignedTo ? `(Assigned to: ${sanitizeInput(assign.assignedTo)}, Status: ${assign.status})` : `(Status: ${assign.status})`}</span>
+                                <span class="${isChecked ? 'checked-item' : ''}">Task: ${sanitizeInput(assign.task)} ${assign.assignedTo ? `(Assigned to: <span class="assigned-name">${sanitizeInput(assign.assignedTo)}</span>, Status: ${assign.status})` : `(Status: ${assign.status})`}</span>
                             </label>
                         `;
                         previousItemsList.appendChild(li);
@@ -913,7 +1049,7 @@
                         li.innerHTML = `
                             <label class="flex items-center">
                                 <input type="checkbox" data-id="${dataId}" ${isChecked ? 'checked' : ''} aria-label="Check off lesson: ${lesson.name}">
-                                <span class="${isChecked ? 'checked-item' : ''}">Lesson - Date: ${sanitizeInput(lesson.date ? formatDate(lesson.date) : '')}, Teacher: ${sanitizeInput(lesson.name)}</span>
+                                <span class="${isChecked ? 'checked-item' : ''}">Lesson - Date: ${sanitizeInput(formatDate(lesson.date))}, Teacher: <span class="assigned-name">${sanitizeInput(lesson.name)}</span></span>
                             </label>
                         `;
                         previousItemsList.appendChild(li);
@@ -927,7 +1063,7 @@
                         li.innerHTML = `
                             <label class="flex items-center">
                                 <input type="checkbox" data-id="${dataId}" ${isChecked ? 'checked' : ''} aria-label="Check off activity: ${activity.description}">
-                                <span class="${isChecked ? 'checked-item' : ''}">Activity - Date: ${sanitizeInput(activity.date ? formatDate(activity.date) : '')}, Description: ${sanitizeInput(activity.description)}${activity.assignedTo ? `, Assigned to: ${sanitizeInput(activity.assignedTo)}` : ''}</span>
+                                <span class="${isChecked ? 'checked-item' : ''}">Activity - Date: ${sanitizeInput(formatDate(activity.date))}, Description: ${sanitizeInput(activity.description)}${activity.assignedTo ? `, Assigned to: <span class="assigned-name">${sanitizeInput(activity.assignedTo)}</span>` : ''}</span>
                             </label>
                         `;
                         previousItemsList.appendChild(li);
@@ -947,14 +1083,14 @@
             reviewList.innerHTML = '';
             const formData = getFormData();
             const items = [
-                ...formData.ministeringAssignments.map(a => `Ministering Assignment: ${a.task} ${a.assignedTo ? `(Assigned to: ${a.assignedTo}, Status: ${a.status})` : `(Status: ${a.status})`}`),
-                ...formData.lessons.map(l => `Lesson - Date: ${l.date ? formatDate(l.date) : ''}, Teacher: ${l.name}`),
-                ...formData.activities.map(a => `Activity - Date: ${a.date ? formatDate(a.date) : ''}, Description: ${a.description}${a.assignedTo ? `, Assigned to: ${a.assignedTo}` : ''}`),
+                ...formData.ministeringAssignments.map(a => `Ministering Assignment: ${a.task} ${a.assignedTo ? `(Assigned to: <span class="assigned-name">${a.assignedTo}</span>, Status: ${a.status})` : `(Status: ${a.status})`}`),
+                ...formData.lessons.map(l => `Lesson - Date: ${formatDate(l.date)}, Teacher: <span class="assigned-name">${l.name}</span>`),
+                ...formData.activities.map(a => `Activity - Date: ${formatDate(a.date)}, Description: ${a.description}${a.assignedTo ? `, Assigned to: <span class="assigned-name">${a.assignedTo}</span>` : ''}`),
             ];
             items.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'dynamic-item';
-                div.textContent = item;
+                div.innerHTML = item;
                 reviewList.appendChild(div);
             });
         }
@@ -980,6 +1116,7 @@
             updatePreviousItems();
             updateReviewItems();
             resetValidation();
+            applyAccordionStates();
         }
 
         // Save Agenda
@@ -1046,6 +1183,8 @@
             clearForm();
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('meeting-date').value = today;
+            localStorage.removeItem('accordionStates');
+            document.querySelectorAll('details').forEach(d => d.removeAttribute('open'));
             updatePreviousIdeas();
             updatePreviousItems();
             showMessage('New agenda created');
@@ -1068,22 +1207,30 @@
             doc.text('Presidency Meeting Agenda', 20, 20);
             doc.setFontSize(12);
             let y = 30;
+
             const addSection = (title, content, isList = false) => {
                 if (content && (isList ? content.length : content)) {
                     doc.text(title, 20, y);
                     y += 10;
                     if (isList) {
                         content.forEach(item => {
-                            doc.text(item, 25, y);
-                            y += 7;
+                            const lines = doc.splitTextToSize(item, 160);
+                            lines.forEach(line => {
+                                doc.text(line, 25, y);
+                                y += 7;
+                            });
                         });
                     } else {
-                        doc.text(content, 25, y);
-                        y += 10;
+                        const lines = doc.splitTextToSize(content, 160);
+                        lines.forEach(line => {
+                            doc.text(line, 25, y);
+                            y += 7;
+                        });
                     }
                     y += 5;
                 }
             };
+
             addSection('Meeting Details', [
                 `Date: ${formatDate(formData['meeting-date']) || ''}`,
                 `Conducting: ${formData['conducting'] || ''}`,
@@ -1106,150 +1253,53 @@
                     });
                     addSection('Ideas from Previous Meeting', ideas, true);
                     const previousItems = [
-                        ...(previousData.ministeringAssignments?.map((a, i) => `${followUpStatus[`assign-min-${i + 1}`] ? '[x]' : '[ ]'} Task: ${a.task} ${a.assignedTo ? `(Assigned to: ${a.assignedTo}, Status: ${a.status})` : `(Status: ${a.status})`}`) || []),
-                        ...(previousData.lessons?.map((l, i) => `${followUpStatus[`lesson-${i + 1}`] ? '[x]' : '[ ]'} Lesson - Date: ${l.date ? formatDate(l.date) : ''}, Teacher: ${l.name}`) || []),
-                        ...(previousData.activities?.map((a, i) => `${followUpStatus[`activity-${i + 1}`] ? '[x]' : '[ ]'} Activity - Date: ${a.date ? formatDate(a.date) : ''}, Description: ${a.description}${a.assignedTo ? `, Assigned to: ${a.assignedTo}` : ''}`) || []),
+                        ...(previousData.ministeringAssignments?.map((a, i) => `${followUpStatus[`assign-min-${i + 1}`] ? '[x]' : '[ ]'} Task: ${a.task} ${a.assignedTo ? `(Assigned to: <span class="assigned-name">${a.assignedTo}</span>, Status: ${a.status})` : `(Status: ${a.status})`}`) || []),
+                        ...(previousData.lessons?.map((l, i) => `${followUpStatus[`lesson-${i + 1}`] ? '[x]' : '[ ]'} Lesson - Date: ${formatDate(l.date)}, Teacher: <span class="assigned-name">${l.name}</span>`) || []),
+                        ...(previousData.activities?.map((a, i) => `${followUpStatus[`activity-${i + 1}`] ? '[x]' : '[ ]'} Activity - Date: ${formatDate(a.date)}, Description: ${a.description}${a.assignedTo ? `, Assigned to: <span class="assigned-name">${a.assignedTo}</span>` : ''}`) || []),
                     ];
                     addSection('Assignments from Previous Meeting', previousItems, true);
                 } catch (e) {
                     console.error('Error exporting previous items to PDF:', e);
                 }
             }
+
             addSection('Ministering', formData['ministering-discussion']);
-            addSection('Ministering Assignments', formData.ministeringAssignments.map(a => `Task: ${a.task} ${a.assignedTo ? `(Assigned to: ${a.assignedTo}, Status: ${a.status})` : `(Status: ${a.status})`}`), true);
+            addSection('Ministering Assignments', formData.ministeringAssignments.map(a => `Task: ${a.task} ${a.assignedTo ? `(Assigned to: <span class="assigned-name">${a.assignedTo}</span>, Status: ${a.status})` : `(Status: ${a.status})`}`), true);
             addSection('Sunday Quorum/Class Meetings', formData['sunday-discussion']);
-            addSection('Upcoming Lessons', formData.lessons.map(l => `Date: ${l.date ? formatDate(l.date) : ''}, Teacher: ${l.name}`), true);
+            addSection('Upcoming Lessons', formData.lessons.map(l => `Date: ${formatDate(l.date)}, Teacher: <span class="assigned-name">${l.name}</span>`), true);
             addSection('Service & Activities', formData['skills-ideas']);
-            addSection('Planned Service/Activities', formData.activities.map(a => `Date: ${a.date ? formatDate(a.date) : ''}, Description: ${a.description}${a.assignedTo ? `, Assigned to: ${a.assignedTo}` : ''}`), true);
+            addSection('Planned Service/Activities', formData.activities.map(a => `Date: ${formatDate(a.date)}, Description: ${a.description}${a.assignedTo ? `, Assigned to: <span class="assigned-name">${a.assignedTo}</span>` : ''}`), true);
             addSection('Temple & Family History / Sharing the Gospel', formData['temple-history']);
             addSection('Inviting the Spirit / Fostering Unity', formData['spirit-unity']);
             addSection('Leadership Instruction', formData['leadership-instruction']);
-            addSection('Closing Prayer', formData['closing-prayer']);
+            addSection('Review & Closing', [
+                ...formData.ministeringAssignments.map(a => `Ministering Assignment: ${a.task} ${a.assignedTo ? `(Assigned to: <span class="assigned-name">${a.assignedTo}</span>, Status: ${a.status})` : `(Status: ${a.status})`}`),
+                ...formData.lessons.map(l => `Lesson - Date: ${formatDate(l.date)}, Teacher: <span class="assigned-name">${l.name}</span>`),
+                ...formData.activities.map(a => `Activity - Date: ${formatDate(a.date)}, Description: ${a.description}${a.assignedTo ? `, Assigned to: <span class="assigned-name">${a.assignedTo}</span>` : ''}`),
+                `Closing Prayer: ${formData['closing-prayer'] || ''}`,
+            ], true);
+
             doc.save(`agenda_${formData['meeting-date'] || 'export'}.pdf`);
             showMessage('PDF exported');
         }
 
-        // Event Listeners
-        document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-        document.getElementById('view-past-button').addEventListener('click', openLoadModal);
-        document.getElementById('close-modal-button').addEventListener('click', closeLoadModal);
-        document.getElementById('load-button').addEventListener('click', () => {
-            const key = loadAgendaSelect.value;
-            if (key) {
-                try {
-                    const data = JSON.parse(localStorage.getItem(key));
-                    populateForm(data);
-                    closeLoadModal();
-                    showMessage('Agenda loaded');
-                } catch (e) {
-                    showMessage('Error loading agenda', true);
-                    console.error('Error loading agenda:', e);
-                }
-            } else {
-                showMessage('Please select an agenda', true);
-            }
-        });
-        document.getElementById('save-button').addEventListener('click', saveAgenda);
-        document.getElementById('mobile-save-button').addEventListener('click', saveAgenda);
-        document.getElementById('create-new-button').addEventListener('click', createNewAgenda);
-        document.getElementById('mobile-create-new-button').addEventListener('click', createNewAgenda);
-        document.getElementById('export-pdf-button').addEventListener('click', exportAsPDF);
-        document.getElementById('mobile-export-pdf-button').addEventListener('click', exportAsPDF);
-        document.getElementById('clear-button').addEventListener('click', clearForm);
-        document.getElementById('mobile-clear-button').addEventListener('click', clearForm);
-        document.getElementById('item-modal-confirm').addEventListener('click', () => {
-            console.log('Confirming item modal:', { currentModalType, currentModalIndex });
-            const modalForm = document.getElementById('item-modal-form');
-            const requiredInputs = modalForm.querySelectorAll('input[required]');
-            let isValid = true;
-            requiredInputs.forEach(input => {
-                if (!input.value) {
-                    input.classList.add('error-border');
-                    isValid = false;
-                } else {
-                    input.classList.remove('error-border');
-                }
-            });
-            if (!isValid) {
-                document.getElementById('item-modal-error').classList.remove('hidden');
-                return;
-            }
-            let data = {};
-            if (currentModalType === 'assignment') {
-                data = {
-                    task: document.getElementById('modal-task').value,
-                    assignedTo: document.getElementById('modal-assigned').value,
-                    status: document.getElementById('modal-status').value,
-                };
-                if (currentModalIndex === -1) {
-                    addMinisteringAssignment(data.task, data.assignedTo, data.status, true);
-                } else {
-                    updateItem('assignment', currentModalIndex, data);
-                }
-            } else if (currentModalType === 'lesson') {
-                data = {
-                    date: document.getElementById('modal-date').value,
-                    name: document.getElementById('modal-name').value,
-                };
-                if (currentModalIndex === -1) {
-                    addLesson(data.date, data.name, true);
-                } else {
-                    updateItem('lesson', currentModalIndex, data);
-                }
-            } else if (currentModalType === 'activity') {
-                data = {
-                    date: document.getElementById('modal-date').value,
-                    description: document.getElementById('modal-desc').value,
-                    assignedTo: document.getElementById('modal-assigned').value,
-                };
-                if (currentModalIndex === -1) {
-                    addActivity(data.date, data.description, data.assignedTo, true);
-                } else {
-                    updateItem('activity', currentModalIndex, data);
-                }
-            }
-            closeItemModal();
-        });
-        document.getElementById('item-modal-cancel').addEventListener('click', closeItemModal);
-        form.addEventListener('input', triggerAutosave);
-        document.getElementById('accordion-toggle').addEventListener('change', (e) => {
-            const details = document.querySelectorAll('details');
-            if (e.target.checked) {
-                details.forEach(d => d.removeAttribute('open'));
-            } else {
-                details.forEach(d => d.setAttribute('open', ''));
-            }
-        });
-
-        // Checkbox Event Listener for Follow-Up Items
-        document.addEventListener('change', (e) => {
-            if (e.target.matches('#previous-ideas-list input[type="checkbox"], #previous-items-list input[type="checkbox"]')) {
-                console.log('Checkbox changed:', e.target.dataset.id, e.target.checked);
-                const dataId = e.target.dataset.id;
-                const span = e.target.nextElementSibling;
-                if (e.target.checked) {
-                    span.classList.add('checked-item');
-                } else {
-                    span.classList.remove('checked-item');
-                }
-                triggerAutosave();
-                showMessage(`Item ${e.target.checked ? 'checked' : 'unchecked'}`);
-            }
-        });
-
         // Initialize
-        (function init() {
+        function init() {
             console.log('Initializing app');
             const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            if (savedTheme === 'dark') {
                 document.documentElement.classList.add('dark');
                 document.getElementById('theme-toggle').innerHTML = '<i class="fas fa-sun"></i>';
             }
+            const savedThemeColor = localStorage.getItem('themeColor') || '#4f46e5';
+            updateThemeColor(savedThemeColor);
+            document.getElementById('theme-color-picker').value = savedThemeColor;
+
             const draft = localStorage.getItem('agenda_draft');
             if (draft) {
                 try {
-                    const data = JSON.parse(draft);
-                    populateForm(data);
+                    const draftData = JSON.parse(draft);
+                    populateForm(draftData);
                 } catch (e) {
                     console.error('Error loading draft:', e);
                 }
@@ -1258,10 +1308,108 @@
                 updatePreviousIdeas();
                 updatePreviousItems();
             }
-            if (window.innerWidth <= 640) {
-                document.getElementById('action-buttons').style.display = 'flex';
-            }
-        })();
+
+            document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+            document.getElementById('theme-color-picker').addEventListener('input', (e) => updateThemeColor(e.target.value));
+            document.getElementById('view-past-button').addEventListener('click', openLoadModal);
+            document.getElementById('load-button').addEventListener('click', () => {
+                const key = loadAgendaSelect.value;
+                if (key) {
+                    try {
+                        const data = JSON.parse(localStorage.getItem(key));
+                        populateForm(data);
+                        closeLoadModal();
+                        showMessage('Agenda loaded');
+                    } catch (e) {
+                        showMessage('Error loading agenda', true);
+                        console.error('Error loading agenda:', e);
+                    }
+                }
+            });
+            document.getElementById('close-modal-button').addEventListener('click', closeLoadModal);
+            document.getElementById('save-button').addEventListener('click', saveAgenda);
+            document.getElementById('mobile-save-button').addEventListener('click', saveAgenda);
+            document.getElementById('create-new-button').addEventListener('click', createNewAgenda);
+            document.getElementById('mobile-create-new-button').addEventListener('click', createNewAgenda);
+            document.getElementById('export-pdf-button').addEventListener('click', exportAsPDF);
+            document.getElementById('mobile-export-pdf-button').addEventListener('click', exportAsPDF);
+            document.getElementById('clear-button').addEventListener('click', clearForm);
+            document.getElementById('mobile-clear-button').addEventListener('click', clearForm);
+            document.getElementById('clear-follow-up-button').addEventListener('click', clearCompletedFollowUps);
+            document.getElementById('item-modal-confirm').addEventListener('click', () => {
+                console.log('Confirming item modal:', { type: currentModalType, index: currentModalIndex });
+                const modalForm = document.getElementById('item-modal-form');
+                const requiredInputs = modalForm.querySelectorAll('input[required], select[required]');
+                let isValid = true;
+                requiredInputs.forEach(input => {
+                    if (!input.value) {
+                        input.classList.add('error-border');
+                        isValid = false;
+                    } else {
+                        input.classList.remove('error-border');
+                    }
+                });
+                if (!isValid) {
+                    document.getElementById('item-modal-error').classList.remove('hidden');
+                    return;
+                }
+                if (currentModalType === 'assignment') {
+                    const task = document.getElementById('modal-task').value;
+                    const assignedTo = document.getElementById('modal-assigned').value;
+                    const status = document.getElementById('modal-status').value;
+                    if (currentModalIndex === -1) {
+                        addMinisteringAssignment(task, assignedTo, status, true);
+                    } else {
+                        updateItem('assignment', currentModalIndex, { task, assignedTo, status });
+                    }
+                } else if (currentModalType === 'lesson') {
+                    const date = document.getElementById('modal-date').value;
+                    const name = document.getElementById('modal-name').value;
+                    if (currentModalIndex === -1) {
+                        addLesson(date, name, true);
+                    } else {
+                        updateItem('lesson', currentModalIndex, { date, name });
+                    }
+                } else if (currentModalType === 'activity') {
+                    const date = document.getElementById('modal-date').value;
+                    const description = document.getElementById('modal-desc').value;
+                    const assignedTo = document.getElementById('modal-assigned').value;
+                    if (currentModalIndex === -1) {
+                        addActivity(date, description, assignedTo, true);
+                    } else {
+                        updateItem('activity', currentModalIndex, { date, description, assignedTo });
+                    }
+                }
+                closeItemModal();
+            });
+            document.getElementById('item-modal-cancel').addEventListener('click', closeItemModal);
+            document.getElementById('meeting-date').addEventListener('change', () => {
+                updatePreviousIdeas();
+                updatePreviousItems();
+                triggerAutosave();
+            });
+            document.querySelectorAll('#previous-ideas-list, #previous-items-list').forEach(list => {
+                list.addEventListener('change', (e) => {
+                    if (e.target.type === 'checkbox') {
+                        const li = e.target.closest('li');
+                        const span = li.querySelector('span');
+                        if (e.target.checked) {
+                            span.classList.add('checked-item');
+                        } else {
+                            span.classList.remove('checked-item');
+                        }
+                        triggerAutosave();
+                    }
+                });
+            });
+            form.addEventListener('input', triggerAutosave);
+            document.querySelectorAll('details').forEach(d => {
+                d.addEventListener('toggle', saveAccordionStates);
+            });
+        }
+
+        // Start the app
+        init();
     </script>
 </body>
 </html>
