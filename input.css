@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --theme-color: #4f46e5;
+    --theme-hover: #4338ca;
+}
+
+@layer base {
+    body {
+        @apply font-sans bg-gray-100 dark:bg-gray-900 transition-colors duration-300;
+    }
+}
+
+@layer components {
+    .summary {
+        @apply cursor-pointer p-3 bg-[var(--theme-color)] text-white font-semibold rounded-md mb-2 list-none flex justify-between items-center transition-colors;
+    }
+    .summary:hover {
+        @apply bg-[var(--theme-hover)];
+    }
+    .summary::after {
+        content: '\f078';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        @apply transition-transform ml-2;
+    }
+    details[open] > .summary::after {
+        @apply rotate-180;
+    }
+    details > div {
+        @apply p-4 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md -mt-2 mb-4;
+    }
+    .input {
+        @apply w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md mt-1 mb-3 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 appearance-none;
+        -webkit-appearance: none;
+    }
+    .input[type="textarea"] {
+        @apply min-h-[80px];
+    }
+    .label {
+        @apply font-medium text-gray-700 dark:text-gray-300;
+    }
+    .btn-secondary {
+        @apply px-4 py-2 bg-gray-500 text-white rounded-md font-semibold hover:bg-gray-600 hover:shadow-md transition-all duration-200 flex items-center;
+    }
+    .btn-danger {
+        @apply bg-red-500 text-white px-2 py-1 text-sm rounded-md hover:bg-red-600 transition-colors absolute top-2 right-2;
+    }
+    .btn-unique {
+        @apply px-6 py-3 rounded-lg font-semibold text-white flex items-center justify-center transition-all duration-300 transform hover:scale-105 hover:shadow-lg;
+    }
+    .btn-save {
+        @apply bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800;
+    }
+    .btn-export {
+        @apply bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800;
+    }
+    .btn-next {
+        @apply bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800;
+    }
+    .btn-clear {
+        @apply bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800;
+    }
+    .dynamic-item {
+        @apply border border-dashed border-gray-300 dark:border-gray-600 p-3 mb-3 rounded-md bg-gray-50 dark:bg-gray-800 relative;
+    }
+    #message-box {
+        @apply fixed bottom-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-white p-3 rounded-md shadow-lg z-50 opacity-0 transition-opacity pointer-events-none;
+    }
+    #message-box.show {
+        @apply opacity-100;
+    }
+}

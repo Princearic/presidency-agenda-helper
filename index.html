@@ -2,201 +2,616 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Presidency Agenda Helper</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="output.css">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.4.9/purify.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="styles.css" rel="stylesheet">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style" onload="this.rel='stylesheet'">
+    <link rel="manifest" href="manifest.json">
 </head>
-<body class="font-inter bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200 p-0">
-    <div class="max-w-2xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-        <div class="flex justify-center items-center mb-6 gap-4 w-full">
-            <h1 class="text-2xl font-bold">Presidency Meeting Agenda</h1>
-            <div class="flex items-center gap-2">
-                <input type="color" id="theme-color-picker" title="Choose Theme Color" aria-label="Choose theme color" class="w-10 h-10 rounded-full cursor-pointer">
-                <button id="theme-toggle" class="btn-secondary" title="Toggle Dark Mode" aria-label="Toggle dark mode">
-                    <i class="fas fa-moon"></i>
+<body class="p-4 md:p-6 bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+    <div class="max-w-2xl mx-auto bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-md">
+        <h1 class="text-2xl font-bold text-center text-gray-800 dark:text-gray-100 mb-6">Presidency Meeting Agenda</h1>
+
+        <div class="flex flex-col gap-4 mb-6">
+            <div>
+                <label for="theme-color" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Theme Color:</label>
+                <input type="color" id="theme-color" value="#4f46e5" class="h-10 w-20 rounded-md border-gray-300 dark:border-gray-600">
+            </div>
+            <div>
+                <button id="dark-mode-toggle" class="btn-secondary flex items-center">
+                    <i class="fas fa-moon mr-2"></i> Toggle Dark Mode
                 </button>
-                <button id="view-past-button" class="btn-secondary" aria-label="View past agendas"><i class="fas fa-history mr-1"></i> View Past Agendas</button>
+            </div>
+            <div>
+                <label for="load-agenda" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Load Previous Agenda:</label>
+                <div class="flex">
+                    <select id="load-agenda" class="flex-grow rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                        <option value="">-- Select an Agenda --</option>
+                    </select>
+                    <button id="load-button" class="btn-secondary ml-2">Load</button>
+                </div>
             </div>
         </div>
 
         <form id="agenda-form">
-            <details id="meeting-details" class="mb-4">
-                <summary class="cursor-pointer p-4 bg-indigo-600 text-white font-semibold rounded-lg flex justify-between items-center transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600">
-                    <span class="summary-icon"><i class="fas fa-calendar-alt"></i></span>Meeting Details
-                    <span class="ml-2 transition-transform"></span>
-                </summary>
-                <div class="p-5 bg-white border border-gray-200 rounded-lg space-y-4 dark:bg-gray-700 dark:border-gray-600">
+            <details class="mb-4" open>
+                <summary aria-expanded="true" class="summary">Meeting Details</summary>
+                <div class="space-y-4">
                     <div>
-                        <label for="meeting-date" class="block font-medium">Date:</label>
-                        <input type="date" id="meeting-date" name="meeting-date" required autocomplete="off" placeholder="Select a date..." class="w-full p-2 border border-gray-300 rounded-md mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200">
-                        <p class="text-xs text-gray-500 mt-1 hidden error-text" id="meeting-date-error">Required</p>
+                        <label for="meeting-date" class="label">Date:</label>
+                        <input type="date" id="meeting-date" name="meeting-date" required class="input">
                     </div>
                     <div>
-                        <label for="conducting" class="block font-medium">Conducting:</label>
-                        <input type="text" id="conducting" name="conducting" placeholder="Enter name of person conducting..." autocomplete="name" required class="w-full p-2 border border-gray-300 rounded-md mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200">
-                        <p class="text-xs text-gray-500 mt-1 hidden error-text" id="conducting-error">Required</p>
+                        <label for="conducting" class="label">Conducting:</label>
+                        <input type="text" id="conducting" name="conducting" placeholder="Name of person conducting" class="input">
                     </div>
                     <div>
-                        <label for="opening-prayer" class="block font-medium">Opening Prayer:</label>
-                        <input type="text" id="opening-prayer" name="opening-prayer" placeholder="Enter name of person praying..." autocomplete="name" required class="w-full p-2 border border-gray-300 rounded-md mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200">
-                        <p class="text-xs text-gray-500 mt-1 hidden error-text" id="opening-prayer-error">Required</p>
+                        <label for="opening-prayer" class="label">Opening Prayer:</label>
+                        <input type="text" id="opening-prayer" name="opening-prayer" placeholder="Name of person praying" class="input">
                     </div>
                 </div>
             </details>
 
-            <details id="follow-up" class="mb-4">
-                <summary class="cursor-pointer p-4 bg-indigo-600 text-white font-semibold rounded-lg flex justify-between items-center transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600">
-                    <span class="summary-icon"><i class="fas fa-check-circle"></i></span>Follow-Up
-                    <span class="ml-2 transition-transform"></span>
-                </summary>
-                <div class="p-5 bg-white border border-gray-200 rounded-lg space-y-4 dark:bg-gray-700 dark:border-gray-600">
-                    <div id="previous-assignments-display" class="text-gray-800 dark:text-gray-200">
-                        <h4 class="font-semibold mb-2">Ideas from Previous Meeting:</h4>
-                        <ul id="previous-ideas-list" class="list-none pl-5" aria-label="Ideas from previous meeting"></ul>
-                        <h4 class="font-semibold mt-4 mb-2">Assignments from Previous Meeting:</h4>
-                        <ul id="previous-items-list" class="list-none pl-5" aria-label="Assignments from previous meeting"></ul>
+            <details class="mb-4">
+                <summary aria-expanded="false" class="summary">Follow-Up</summary>
+                <div>
+                    <label for="follow-up-notes" class="label">Assignments from previous meeting / ward youth council:</label>
+                    <textarea id="follow-up-notes" name="follow-up-notes" placeholder="Discuss status of previous assignments..." class="input"></textarea>
+                    <div id="previous-assignments-display" class="mt-4 text-sm text-gray-600 dark:text-gray-400" style="display: none;">
+                        <h4 class="font-semibold mb-2">Pending items from last meeting:</h4>
+                        <ul class="list-disc list-inside" id="pending-items-list"></ul>
                     </div>
                 </div>
             </details>
 
-            <details id="ministering" class="mb-4">
-                <summary class="cursor-pointer p-4 bg-indigo-600 text-white font-semibold rounded-lg flex justify-between items-center transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600">
-                    <span class="summary-icon"><i class="fas fa-hands-helping"></i></span>Ministering
-                    <span class="ml-2 transition-transform"></span>
-                </summary>
-                <div class="p-5 bg-white border border-gray-200 rounded-lg space-y-4 dark:bg-gray-700 dark:border-gray-600">
-                    <label for="ministering-discussion" class="block font-medium">How can we invite and help our quorum or class come unto Christ? Support them and others?</label>
-                    <textarea id="ministering-discussion" name="ministering-discussion" placeholder="Enter discussion notes here..." class="w-full p-2 border border-gray-300 rounded-md mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"></textarea>
-                    <h4 class="font-semibold mb-2">Assignments:</h4>
-                    <ul id="ministering-assignments-list" class="list-disc pl-5"></ul>
-                    <button type="button" onclick="openItemModal('assignment', -1)" class="btn-secondary text-sm flex items-center"><i class="fas fa-plus mr-1"></i> Add Assignment</button>
+            <details class="mb-4">
+                <summary aria-expanded="false" class="summary">Ministering</summary>
+                <div>
+                    <label for="ministering-discussion" class="label">How can we invite and help our quorum or class come unto Christ? Support them and others?</label>
+                    <textarea id="ministering-discussion" name="ministering-discussion" placeholder="Discussion notes..." class="input"></textarea>
+                    <h4 class="font-semibold mt-4 mb-2 text-gray-800 dark:text-gray-100">Assignments:</h4>
+                    <div id="ministering-assignments-list"></div>
+                    <button type="button" onclick="addMinisteringAssignment()" class="btn-secondary text-sm"><i class="fas fa-plus mr-1"></i> Add Assignment</button>
                 </div>
             </details>
 
-            <details id="sunday" class="mb-4">
-                <summary class="cursor-pointer p-4 bg-indigo-600 text-white font-semibold rounded-lg flex justify-between items-center transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600">
-                    <span class="summary-icon"><i class="fas fa-book-open"></i></span>Sunday Quorum/Class Meetings
-                    <span class="ml-2 transition-transform"></span>
-                </summary>
-                <div class="p-5 bg-white border border-gray-200 rounded-lg space-y-4 dark:bg-gray-700 dark:border-gray-600">
-                    <label for="sunday-discussion" class="block font-medium">What to discuss with quorum/class members? (Ref: "Counsel Together")</label>
-                    <textarea id="sunday-discussion" name="sunday-discussion" placeholder="Enter discussion points for Sunday here..." class="w-full p-2 border border-gray-300 rounded-md mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"></textarea>
-                    <h4 class="font-semibold mb-2">Upcoming Lessons:</h4>
-                    <ul id="lessons-list" class="list-disc pl-5"></ul>
-                    <button type="button" onclick="openItemModal('lesson', -1)" class="btn-secondary text-sm flex items-center"><i class="fas fa-plus mr-1"></i> Add Lesson</button>
+            <details class="mb-4">
+                <summary aria-expanded="false" class="summary">Sunday Quorum/Class Meetings</summary>
+                <div>
+                    <label for="sunday-discussion" class="label">What to discuss with quorum/class members? (Ref: "Counsel Together")</label>
+                    <textarea id="sunday-discussion" name="sunday-discussion" placeholder="Discussion points for Sunday..." class="input"></textarea>
+                    <h4 class="font-semibold mt-4 mb-2 text-gray-800 dark:text-gray-100">Upcoming Lessons:</h4>
+                    <div id="lessons-list"></div>
+                    <button type="button" onclick="addLesson()" class="btn-secondary text-sm"><i class="fas fa-plus mr-1"></i> Add Lesson</button>
                 </div>
             </details>
 
-            <details id="service" class="mb-4">
-                <summary class="cursor-pointer p-4 bg-indigo-600 text-white font-semibold rounded-lg flex justify-between items-center transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600">
-                    <span class="summary-icon"><i class="fas fa-tools"></i></span>Service & Activities
-                    <span class="ml-2 transition-transform"></span>
-                </summary>
-                <div class="p-5 bg-white border border-gray-200 rounded-lg space-y-4 dark:bg-gray-700 dark:border-gray-600">
-                    <label for="skills-ideas" class="block font-medium">Skills to learn/develop? How to serve others?</label>
-                    <textarea id="skills-ideas" name="skills-ideas" placeholder="Brainstorm ideas here..." class="w-full p-2 border border-gray-300 rounded-md mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"></textarea>
-                    <h4 class="font-semibold mb-2">Planned Service/Activities:</h4>
-                    <ul id="activities-list" class="list-disc pl-5"></ul>
-                    <button type="button" onclick="openItemModal('activity', -1)" class="btn-secondary text-sm flex items-center"><i class="fas fa-plus mr-1"></i> Add Activity</button>
+            <details class="mb-4">
+                <summary aria-expanded="false" class="summary">Service & Activities</summary>
+                <div>
+                    <label for="skills-ideas" class="label">Skills to learn/develop? How to serve others?</label>
+                    <textarea id="skills-ideas" name="skills-ideas" placeholder="Brainstorm ideas..." class="input"></textarea>
+                    <h4 class="font-semibold mt-4 mb-2 text-gray-800 dark:text-gray-100">Planned Service/Activities:</h4>
+                    <div id="activities-list"></div>
+                    <button type="button" onclick="addActivity()" class="btn-secondary text-sm"><i class="fas fa-plus mr-1"></i> Add Activity</button>
                 </div>
             </details>
 
-            <details id="other" class="mb-4">
-                <summary class="cursor-pointer p-4 bg-indigo-600 text-white font-semibold rounded-lg flex justify-between items-center transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600">
-                    <span class="summary-icon"><i class="fas fa-comments"></i></span>Other Discussion Items
-                    <span class="ml-2 transition-transform"></span>
-                </summary>
-                <div class="p-5 bg-white border border-gray-200 rounded-lg space-y-4 dark:bg-gray-700 dark:border-gray-600">
+            <details class="mb-4">
+                <summary aria-expanded="false" class="summary">Other Discussion Items</summary>
+                <div class="space-y-4">
                     <div>
-                        <label for="temple-history" class="block font-medium">Temple & Family History / Sharing the Gospel:</label>
-                        <textarea id="temple-history" name="temple-history" placeholder="Enter notes on participation here..." class="w-full p-2 border border-gray-300 rounded-md mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"></textarea>
+                        <label for="temple-history" class="label">Temple & Family History / Sharing the Gospel:</label>
+                        <textarea id="temple-history" name="temple-history" placeholder="Notes on participation..." class="input"></textarea>
                     </div>
                     <div>
-                        <label for="spirit-unity" class="block font-medium">Inviting the Spirit / Fostering Unity:</label>
-                        <textarea id="spirit-unity" name="spirit-unity" placeholder="Enter ideas and plans here..." class="w-full p-2 border border-gray-300 rounded-md mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"></textarea>
+                        <label for="spirit-unity" class="label">Inviting the Spirit / Fostering Unity:</label>
+                        <textarea id="spirit-unity" name="spirit-unity" placeholder="Ideas and plans..." class="input"></textarea>
                     </div>
                 </div>
             </details>
 
-            <details id="leadership" class="mb-4">
-                <summary class="cursor-pointer p-4 bg-indigo-600 text-white font-semibold rounded-lg flex justify-between items-center transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600">
-                    <span class="summary-icon"><i class="fas fa-chalkboard-teacher"></i></span>Leadership Instruction
-                    <span class="ml-2 transition-transform"></span>
-                </summary>
-                <div class="p-5 bg-white border border-gray-200 rounded-lg space-y-4 dark:bg-gray-700 dark:border-gray-600">
-                    <label for="leadership-instruction" class="block font-medium">Notes from Bishopric Member or Adult Adviser:</label>
-                    <textarea id="leadership-instruction" name="leadership-instruction" placeholder="Record instructions given here..." class="w-full p-2 border border-gray-300 rounded-md mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"></textarea>
+            <details class="mb-4">
+                <summary aria-expanded="false" class="summary">Leadership Instruction</summary>
+                <div>
+                    <label for="leadership-instruction" class="label">Notes from Bishopric Member or Adult Adviser:</label>
+                    <textarea id="leadership-instruction" name="leadership-instruction" placeholder="Record instructions given..." class="input"></textarea>
                 </div>
             </details>
 
-            <details id="review" class="mb-4">
-                <summary class="cursor-pointer p-4 bg-indigo-600 text-white font-semibold rounded-lg flex justify-between items-center transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600">
-                    <span class="summary-icon"><i class="fas fa-list-ul"></i></span>Review & Closing
-                    <span class="ml-2 transition-transform"></span>
-                </summary>
-                <div class="p-5 bg-white border border-gray-200 rounded-lg space-y-4 dark:bg-gray-700 dark:border-gray-600">
+            <details class="mb-4">
+                <summary aria-expanded="false" class="summary">Review & Closing</summary>
+                <div class="space-y-4">
                     <div>
-                        <h4 class="font-semibold mb-2">Items for Review:</h4>
-                        <div id="review-items-list"></div>
+                        <label for="review-assignments" class="label">Review Assignments Made This Meeting:</label>
+                        <textarea id="review-assignments" name="review-assignments" placeholder="Final check on who is doing what..." class="input"></textarea>
                     </div>
                     <div>
-                        <label for="closing-prayer" class="block font-medium">Closing Prayer:</label>
-                        <input type="text" id="closing-prayer" name="closing-prayer" placeholder="Enter name of person praying..." autocomplete="name" class="w-full p-2 border border-gray-300 rounded-md mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200">
+                        <label for="closing-prayer" class="label">Closing Prayer:</label>
+                        <input type="text" id="closing-prayer" name="closing-prayer" placeholder="Name of person praying" class="input">
                     </div>
                 </div>
             </details>
 
-            <div class="mt-8 flex justify-center gap-4 w-full" id="desktop-buttons">
-                <button type="button" id="save-button" class="btn-primary flex items-center"><i class="fas fa-save mr-1"></i> Save Agenda</button>
-                <button type="button" id="create-new-button" class="btn-success flex items-center"><i class="fas fa-plus mr-1"></i> Create New Agenda</button>
-                <button type="button" id="export-pdf-button" class="btn-danger flex items-center"><i class="fas fa-file-pdf mr-1"></i> Export as PDF</button>
-                <button type="button" id="clear-button" class="bg-gray-400 border-gray-400 flex items-center" aria-label="Clear the form"><i class="fas fa-eraser mr-1"></i> Clear Form</button>
+            <div class="mt-8 flex flex-wrap justify-center gap-4">
+                <button type="button" id="save-button" class="btn-unique btn-save"><i class="fas fa-save mr-2"></i> Save Current Agenda</button>
+                <button type="button" id="export-pdf" class="btn-unique btn-export"><i class="fas fa-file-pdf mr-2"></i> Export PDF</button>
+                <button type="button" id="generate-next-button" class="btn-unique btn-next"><i class="fas fa-arrow-right mr-2"></i> Start Next Agenda</button>
+                <button type="button" id="clear-button" class="btn-unique btn-clear"><i class="fas fa-eraser mr-2"></i> Clear Form</button>
             </div>
         </form>
-
-        <div id="action-buttons" class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 p-3 shadow-md flex justify-center gap-2 flex-wrap">
-            <button type="button" id="mobile-save-button" class="btn-primary" title="Save Agenda" aria-label="Save the current agenda"><i class="fas fa-save"></i></button>
-            <button type="button" id="mobile-create-new-button" class="btn-success" title="Create New Agenda" aria-label="Create a new agenda"><i class="fas fa-plus"></i></button>
-            <button type="button" id="mobile-export-pdf-button" class="btn-danger" title="Export as PDF" aria-label="Export agenda as PDF"><i class="fas fa-file-pdf"></i></button>
-            <button type="button" id="mobile-clear-button" class="bg-gray-400 border-gray-400" title="Clear Form" aria-label="Clear the form"><i class="fas fa-eraser"></i></button>
-        </div>
     </div>
 
-    <div id="load-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-        <div id="load-modal-content" class="bg-white dark:bg-gray-700 p-6 rounded-lg max-w-lg w-full shadow-lg">
-            <h2 class="text-lg font-semibold mb-4">Load Past Agenda</h2>
-            <div class="flex mb-4">
-                <select id="load-agenda" class="flex-grow p-2 border border-gray-300 rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200">
-                    <option value="">-- Select an Agenda --</option>
-                </select>
-                <button id="load-button" class="btn-secondary ml-2" aria-label="Load selected agenda">Load</button>
-            </div>
-            <button id="close-modal-button" class="btn-secondary w-full" aria-label="Close modal">Close</button>
-        </div>
-    </div>
+    <div id="message-box"></div>
 
-    <div id="item-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-        <div id="item-modal-content" class="bg-white dark:bg-gray-700 p-6 rounded-lg max-w-lg w-full shadow-lg">
-            <h2 id="item-modal-title" class="text-lg font-semibold mb-4"></h2>
-            <form id="item-modal-form" class="space-y-4"></form>
-            <p id="item-modal-error" class="text-xs text-red-500 mt-1 hidden">Please fill in all required fields.</p>
-            <div class="flex gap-4 mt-4">
-                <button type="button" id="item-modal-confirm" class="btn-secondary flex-grow" aria-label="Confirm item">Confirm</button>
-                <button type="button" id="item-modal-cancel" class="btn-secondary flex-grow" aria-label="Cancel">Cancel</button>
-            </div>
-        </div>
-    </div>
+    <script>
+        // === Global Variables ===
+        const form = document.getElementById('agenda-form');
+        const loadAgendaSelect = document.getElementById('load-agenda');
+        const messageBox = document.getElementById('message-box');
+        const themeColorInput = document.getElementById('theme-color');
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        let messageTimeout;
 
-    <div id="message-box" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-green-500 text-white p-3 rounded-lg shadow-md flex items-center gap-2 opacity-0 transition-opacity z-50">
-        <i id="message-icon" class="fas"></i><span id="message-text"></span>
-    </div>
+        // Dynamic Item Counters
+        let ministeringAssignmentCount = 0;
+        let lessonCount = 0;
+        let activityCount = 0;
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="script.js"></script>
+        // === Theme and Dark Mode ===
+        function applyThemeColor(color) {
+            document.documentElement.style.setProperty('--theme-color', color);
+            document.documentElement.style.setProperty('--theme-hover', darkenColor(color, 0.9));
+        }
+
+        function darkenColor(hex, factor) {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `rgb(${Math.floor(r * factor)}, ${Math.floor(g * factor)}, ${Math.floor(b * factor)})`;
+        }
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            darkModeToggle.innerHTML = `<i class="fas ${isDark ? 'fa-sun' : 'fa-moon'} mr-2"></i> ${isDark ? 'Light Mode' : 'Dark Mode'}`;
+            localStorage.setItem('darkMode', isDark);
+        }
+
+        // === Utility Functions ===
+        function showMessage(message, duration = 3000) {
+            messageBox.textContent = message;
+            messageBox.classList.add('show');
+            clearTimeout(messageTimeout);
+            messageTimeout = setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, duration);
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        function getSavedAgendaKeys() {
+            const keys = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('agenda_') && key !== 'agenda_draft') {
+                    keys.push(key);
+                }
+            }
+            return keys.sort();
+        }
+
+        function populateLoadAgendaDropdown() {
+            const keys = getSavedAgendaKeys();
+            loadAgendaSelect.innerHTML = '<option value="">-- Select an Agenda --</option>';
+            keys.forEach(key => {
+                let displayName = key.replace('agenda_', '');
+                try {
+                    const data = JSON.parse(localStorage.getItem(key));
+                    if (data['meeting-date']) {
+                        displayName = `Agenda ${data['meeting-date']}`;
+                    }
+                } catch (e) {
+                    console.error("Error parsing stored agenda data for display name", e);
+                }
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = displayName;
+                loadAgendaSelect.appendChild(option);
+            });
+        }
+
+        function clearDynamicLists() {
+            document.getElementById('ministering-assignments-list').innerHTML = '';
+            document.getElementById('lessons-list').innerHTML = '';
+            document.getElementById('activities-list').innerHTML = '';
+            document.getElementById('pending-items-list').innerHTML = '';
+            ministeringAssignmentCount = 0;
+            lessonCount = 0;
+            activityCount = 0;
+        }
+
+        function clearForm() {
+            form.reset();
+            clearDynamicLists();
+            document.getElementById('previous-assignments-display').style.display = 'none';
+            showMessage("Form cleared", 1500);
+        }
+
+        // === Dynamic Item Management ===
+        function addMinisteringAssignment(task = '', assignedTo = '', status = 'Pending') {
+            ministeringAssignmentCount++;
+            const list = document.getElementById('ministering-assignments-list');
+            const div = document.createElement('div');
+            div.className = 'dynamic-item ministering-assignment-item';
+            div.id = `min-assign-${ministeringAssignmentCount}`;
+            div.innerHTML = `
+                <button type="button" class="btn-danger remove-btn" onclick="removeItem('min-assign-${ministeringAssignmentCount}')" aria-label="Remove assignment"><i class="fas fa-times"></i></button>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div>
+                        <label for="min-task-${ministeringAssignmentCount}" class="text-sm font-medium">Task:</label>
+                        <input type="text" id="min-task-${ministeringAssignmentCount}" name="min-task-${ministeringAssignmentCount}" value="${DOMPurify.sanitize(task)}" placeholder="Assignment description" class="input">
+                    </div>
+                    <div>
+                        <label for="min-assigned-${ministeringAssignmentCount}" class="text-sm font-medium">Assigned To:</label>
+                        <input type="text" id="min-assigned-${ministeringAssignmentCount}" name="min-assigned-${ministeringAssignmentCount}" value="${DOMPurify.sanitize(assignedTo)}" placeholder="Name" class="input">
+                    </div>
+                    <div>
+                        <label for="min-status-${ministeringAssignmentCount}" class="text-sm font-medium">Status:</label>
+                        <select id="min-status-${ministeringAssignmentCount}" name="min-status-${ministeringAssignmentCount}" class="input">
+                            <option value="Pending" ${status === 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option value="Done" ${status === 'Done' ? 'selected' : ''}>Done</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+            list.appendChild(div);
+        }
+
+        function addLesson(date = '', name = '') {
+            lessonCount++;
+            const list = document.getElementById('lessons-list');
+            const div = document.createElement('div');
+            div.className = 'dynamic-item lesson-item';
+            div.id = `lesson-${lessonCount}`;
+            div.innerHTML = `
+                <button type="button" class="btn-danger remove-btn" onclick="removeItem('lesson-${lessonCount}')" aria-label="Remove lesson"><i class="fas fa-times"></i></button>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                        <label for="lesson-date-${lessonCount}" class="text-sm font-medium">Date:</label>
+                        <input type="date" id="lesson-date-${lessonCount}" name="lesson-date-${lessonCount}" value="${DOMPurify.sanitize(date)}" class="input">
+                    </div>
+                    <div>
+                        <label for="lesson-name-${lessonCount}" class="text-sm font-medium">Teacher Name:</label>
+                        <input type="text" id="lesson-name-${lessonCount}" name="lesson-name-${lessonCount}" value="${DOMPurify.sanitize(name)}" placeholder="Name" class="input">
+                    </div>
+                </div>
+            `;
+            list.appendChild(div);
+        }
+
+        function addActivity(date = '', activityDesc = '', assignedTo = '') {
+            activityCount++;
+            const list = document.getElementById('activities-list');
+            const div = document.createElement('div');
+            div.className = 'dynamic-item activity-item';
+            div.id = `activity-${activityCount}`;
+            div.innerHTML = `
+                <button type="button" class="btn-danger remove-btn" onclick="removeItem('activity-${activityCount}')" aria-label="Remove activity"><i class="fas fa-times"></i></button>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div>
+                        <label for="activity-date-${activityCount}" class="text-sm font-medium">Date:</label>
+                        <input type="date" id="activity-date-${activityCount}" name="activity-date-${activityCount}" value="${DOMPurify.sanitize(date)}" class="input">
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label for="activity-desc-${activityCount}" class="text-sm font-medium">Activity:</label>
+                        <input type="text" id="activity-desc-${activityCount}" name="activity-desc-${activityCount}" value="${DOMPurify.sanitize(activityDesc)}" placeholder="Activity description" class="input">
+                    </div>
+                    <div class="sm:col-span-3">
+                        <label for="activity-assigned-${activityCount}" class="text-sm font-medium">Assigned To:</label>
+                        <input type="text" id="activity-assigned-${activityCount}" name="activity-assigned-${activityCount}" value="${DOMPurify.sanitize(assignedTo)}" placeholder="Name(s)" class="input">
+                    </div>
+                </div>
+            `;
+            list.appendChild(div);
+        }
+
+        function removeItem(id) {
+            const item = document.getElementById(id);
+            if (item) {
+                item.remove();
+            }
+        }
+
+        // === Form Handling ===
+        function getFormData() {
+            const formData = new FormData(form);
+            const data = {};
+            for (const [key, value] of formData.entries()) {
+                if (!key.startsWith('min-') && !key.startsWith('lesson-') && !key.startsWith('activity-')) {
+                    data[key] = DOMPurify.sanitize(value);
+                }
+            }
+            data.ministeringAssignments = [];
+            document.querySelectorAll('.ministering-assignment-item').forEach(item => {
+                const idNum = item.id.split('-')[2];
+                data.ministeringAssignments.push({
+                    task: DOMPurify.sanitize(item.querySelector(`#min-task-${idNum}`).value),
+                    assignedTo: DOMPurify.sanitize(item.querySelector(`#min-assigned-${idNum}`).value),
+                    status: item.querySelector(`#min-status-${idNum}`).value
+                });
+            });
+            data.lessons = [];
+            document.querySelectorAll('.lesson-item').forEach(item => {
+                const idNum = item.id.split('-')[1];
+                data.lessons.push({
+                    date: DOMPurify.sanitize(item.querySelector(`#lesson-date-${idNum}`).value),
+                    name: DOMPurify.sanitize(item.querySelector(`#lesson-name-${idNum}`).value)
+                });
+            });
+            data.activities = [];
+            document.querySelectorAll('.activity-item').forEach(item => {
+                const idNum = item.id.split('-')[1];
+                data.activities.push({
+                    date: DOMPurify.sanitize(item.querySelector(`#activity-date-${idNum}`).value),
+                    description: DOMPurify.sanitize(item.querySelector(`#activity-desc-${idNum}`).value),
+                    assignedTo: DOMPurify.sanitize(item.querySelector(`#activity-assigned-${idNum}`).value)
+                });
+            });
+            return data;
+        }
+
+        function populateForm(data) {
+            clearForm();
+            for (const key in data) {
+                if (form.elements[key] && !['ministeringAssignments', 'lessons', 'activities'].includes(key)) {
+                    form.elements[key].value = data[key];
+                }
+            }
+            if (data.ministeringAssignments) {
+                data.ministeringAssignments.forEach(item => {
+                    addMinisteringAssignment(item.task, item.assignedTo, item.status);
+                });
+            }
+            if (data.lessons) {
+                data.lessons.forEach(item => {
+                    addLesson(item.date, item.name);
+                });
+            }
+            if (data.activities) {
+                data.activities.forEach(item => {
+                    addActivity(item.date, item.description, item.assignedTo);
+                });
+            }
+        }
+
+        // === Storage and Persistence ===
+        function saveAgenda() {
+            try {
+                const data = getFormData();
+                const meetingDate = data['meeting-date'];
+                if (!meetingDate) {
+                    showMessage("Please select a meeting date before saving.", 3000);
+                    document.getElementById('meeting-date').focus();
+                    return;
+                }
+                const key = `agenda_${meetingDate}`;
+                const serialized = JSON.stringify(data);
+                const storageSize = ((localStorage.getItem(key)?.length || 0) + serialized.length) / 1024 / 1024;
+                if (storageSize > 4.5) {
+                    showMessage("Storage almost full. Consider deleting old agendas.", 4000);
+                }
+                localStorage.setItem(key, serialized);
+                showMessage(`Agenda for ${meetingDate} saved successfully!`);
+                populateLoadAgendaDropdown();
+            } catch (e) {
+                console.error("Error saving to localStorage:", e);
+                showMessage("Error saving agenda. Storage might be full.", 4000);
+            }
+        }
+
+        function loadAgenda() {
+            const selectedKey = loadAgendaSelect.value;
+            if (!selectedKey) {
+                showMessage("Please select an agenda to load.", 2000);
+                return;
+            }
+            try {
+                const dataString = localStorage.getItem(selectedKey);
+                if (!dataString) throw new Error("No data found");
+                const data = JSON.parse(dataString);
+                populateForm(data);
+                document.getElementById('previous-assignments-display').style.display = 'none';
+                document.getElementById('pending-items-list').innerHTML = '';
+                showMessage(`Loaded agenda: ${selectedKey.replace('agenda_', '')}`);
+            } catch (e) {
+                console.error("Error loading agenda:", e);
+                showMessage(`Failed to load agenda: ${e.message}`, 3000);
+            }
+        }
+
+        function generateNextAgenda() {
+            const currentData = getFormData();
+            clearForm();
+            const lastDateStr = currentData['meeting-date'];
+            if (lastDateStr) {
+                try {
+                    const lastDate = new Date(lastDateStr + 'T00:00:00');
+                    if (!isNaN(lastDate.getTime())) {
+                        lastDate.setDate(lastDate.getDate() + 7);
+                        const year = lastDate.getFullYear();
+                        const month = String(lastDate.getMonth() + 1).padStart(2, '0');
+                        const day = String(lastDate.getDate()).padStart(2, '0');
+                        form.elements['meeting-date'].value = `${year}-${month}-${day}`;
+                    }
+                } catch (e) {
+                    console.error("Error calculating next date", e);
+                }
+            }
+            updatePendingItemsDisplay(currentData.ministeringAssignments || []);
+            const followUpDetails = document.querySelector('details:nth-of-type(2)');
+            if (followUpDetails) followUpDetails.open = true;
+            showMessage("Form prepared for next agenda. Pending items added to Follow-Up.", 4000);
+        }
+
+        function updatePendingItemsDisplay(assignments) {
+            const pendingItemsList = document.getElementById('pending-items-list');
+            const pendingItemsDisplay = document.getElementById('previous-assignments-display');
+            pendingItemsList.innerHTML = '';
+            let hasPendingItems = false;
+            assignments.forEach((item, index) => {
+                if (item.status === 'Pending') {
+                    const li = document.createElement('li');
+                    li.innerHTML = `${DOMPurify.sanitize(item.task)} (Assigned to: ${DOMPurify.sanitize(item.assignedTo || 'N/A')})
+                        <button type="button" class="btn-secondary text-xs ml-2" onclick="markPendingDone(${index})">Mark Done</button>`;
+                    pendingItemsList.appendChild(li);
+                    hasPendingItems = true;
+                }
+            });
+            pendingItemsDisplay.style.display = hasPendingItems ? 'block' : 'none';
+        }
+
+        function markPendingDone(index) {
+            try {
+                const latestKey = getSavedAgendaKeys().pop();
+                if (!latestKey) {
+                    showMessage("No previous agenda found.", 2000);
+                    return;
+                }
+                const data = JSON.parse(localStorage.getItem(latestKey));
+                data.ministeringAssignments[index].status = 'Done';
+                localStorage.setItem(latestKey, JSON.stringify(data));
+                updatePendingItemsDisplay(data.ministeringAssignments);
+                showMessage("Item marked as done", 2000);
+            } catch (e) {
+                console.error("Error marking item as done:", e);
+                showMessage("Failed to update item status.", 3000);
+            }
+        }
+
+        function exportToPDF() {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                const data = getFormData();
+                let y = 20;
+                doc.setFontSize(16);
+                doc.text("Presidency Meeting Agenda", 20, y);
+                y += 10;
+                doc.setFontSize(12);
+                doc.text(`Date: ${data['meeting-date'] || 'N/A'}`, 20, y);
+                y += 10;
+                doc.text(`Conducting: ${data['conducting'] || 'N/A'}`, 20, y);
+                y += 10;
+                doc.text(`Opening Prayer: ${data['opening-prayer'] || 'N/A'}`, 20, y);
+                y += 15;
+                doc.text("Follow-Up:", 20, y);
+                y += 10;
+                doc.text(data['follow-up-notes'] || 'N/A', 20, y, { maxWidth: 160 });
+                y += 15;
+                doc.text("Ministering:", 20, y);
+                y += 10;
+                doc.text(data['ministering-discussion'] || 'N/A', 20, y, { maxWidth: 160 });
+                if (data.ministeringAssignments.length) {
+                    y += 10;
+                    doc.text("Assignments:", 20, y);
+                    data.ministeringAssignments.forEach(item => {
+                        y += 10;
+                        doc.text(`- ${item.task} (Assigned: ${item.assignedTo}, Status: ${item.status})`, 25, y, { maxWidth: 150 });
+                    });
+                }
+                doc.save(`agenda_${data['meeting-date'] || 'unnamed'}.pdf`);
+                showMessage("PDF exported successfully", 2000);
+            } catch (e) {
+                console.error("Error exporting PDF:", e);
+                showMessage("Failed to export PDF.", 3000);
+            }
+        }
+
+        // === Event Listeners ===
+        document.getElementById('save-button').addEventListener('click', debounce(saveAgenda, 300));
+        document.getElementById('load-button').addEventListener('click', loadAgenda);
+        document.getElementById('generate-next-button').addEventListener('click', generateNextAgenda);
+        document.getElementById('clear-button').addEventListener('click', clearForm);
+        document.getElementById('export-pdf').addEventListener('click', exportToPDF);
+        darkModeToggle.addEventListener('click', toggleDarkMode);
+
+        themeColorInput.addEventListener('input', (e) => {
+            applyThemeColor(e.target.value);
+            localStorage.setItem('themeColor', e.target.value);
+        });
+
+        form.addEventListener('input', debounce(() => {
+            try {
+                const data = getFormData();
+                localStorage.setItem('agenda_draft', JSON.stringify(data));
+                showMessage("Draft auto-saved", 1500);
+            } catch (e) {
+                console.error("Error auto-saving draft:", e);
+            }
+        }, 1000));
+
+        document.querySelectorAll('details').forEach(detail => {
+            detail.addEventListener('toggle', () => {
+                const summary = detail.querySelector('summary');
+                summary.setAttribute('aria-expanded', detail.open);
+            });
+        });
+
+        document.addEventListener('keydown', e => {
+            if (e.target.classList.contains('remove-btn') && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault();
+                removeItem(e.target.closest('.dynamic-item').id);
+            }
+        });
+
+        // === Initial Setup ===
+        window.addEventListener('load', () => {
+            try {
+                const draft = localStorage.getItem('agenda_draft');
+                if (draft) {
+                    populateForm(JSON.parse(draft));
+                    showMessage("Loaded draft", 2000);
+                }
+                populateLoadAgendaDropdown();
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                if (!form.elements['meeting-date'].value) {
+                    form.elements['meeting-date'].value = `${year}-${month}-${day}`;
+                }
+                document.getElementById('previous-assignments-display').style.display = 'none';
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('sw.js').catch(e => console.error("Service Worker registration failed:", e));
+                }
+                const savedTheme = localStorage.getItem('themeColor') || '#4f46e5';
+                themeColorInput.value = savedTheme;
+                applyThemeColor(savedTheme);
+                const darkMode = localStorage.getItem('darkMode') === 'true';
+                if (darkMode) {
+                    document.documentElement.classList.add('dark');
+                    darkModeToggle.innerHTML = '<i class="fas fa-sun mr-2"></i> Light Mode';
+                }
+            } catch (e) {
+                console.error("Error during initial setup:", e);
+            }
+        });
+    </script>
 </body>
 </html>
