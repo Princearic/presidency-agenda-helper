@@ -21,6 +21,7 @@
             background-color: #f3f4f6;
             margin: 0;
             padding: 0;
+            overflow-x: hidden; /* Prevent horizontal scrolling */
         }
         .dark body {
             background-color: #1f2937;
@@ -31,6 +32,7 @@
             margin-left: auto;
             margin-right: auto;
             padding: 1rem;
+            box-sizing: border-box; /* Ensure padding doesn't exceed width */
         }
         @media (min-width: 640px) {
             .max-w-2xl {
@@ -99,6 +101,8 @@
             margin-bottom: 0.75rem;
             font-size: 1rem;
             box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            font-style: italic; /* Aesthetically pleasing placeholder font */
         }
         input[type="text"]:focus,
         input[type="date"]:focus,
@@ -159,83 +163,62 @@
             min-width: 48px;
             min-height: 48px;
             margin: 0.25rem;
+            color: white; /* Apply theme color to text */
+            border: 2px solid var(--accent-color); /* Apply theme color to border */
+            background-color: var(--accent-color-dark); /* Darker theme color for contrast */
+        }
+        button:hover {
+            background-color: var(--accent-color);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        .dark button:hover {
+            background-color: var(--accent-color-light);
         }
         .btn-primary {
-            background-color: var(--accent-color);
+            background-color: #10b981; /* Green for Save */
+            border-color: #10b981;
             color: white;
         }
         .btn-primary:hover {
-            background-color: var(--accent-color-dark);
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            background-color: #059669;
         }
         .btn-success {
-            background-color: #10b981;
+            background-color: #3b82f6; /* Blue for Create New */
+            border-color: #3b82f6;
             color: white;
         }
         .btn-success:hover {
-            background-color: #059669;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            background-color: #2563eb;
         }
         .btn-secondary {
-            background-image: linear-gradient(to right, var(--accent-color), var(--accent-color-light));
+            background-color: var(--accent-color-dark);
+            border-color: var(--accent-color);
             color: white;
-            padding: 1rem 2rem;
-            transition: transform 0.2s ease-in-out;
-        }
-        .btn-secondary:hover,
-        .btn-secondary:active {
-            background-image: linear-gradient(to right, var(--accent-color-dark), var(--accent-color));
-            transform: scale(1.05);
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
         .dark .btn-secondary {
-            background-image: linear-gradient(to right, var(--accent-color-light), var(--accent-color));
-        }
-        .dark .btn-secondary:hover,
-        .dark .btn-secondary:active {
-            background-image: linear-gradient(to right, var(--accent-color), var(--accent-color-dark));
-            transform: scale(1.05);
+            background-color: var(--accent-color-light);
         }
         .btn-danger {
-            background-image: linear-gradient(to right, var(--accent-color), var(--accent-color-light));
+            background-color: #ef4444; /* Red for Export PDF */
+            border-color: #ef4444;
             color: white;
-            padding: 0.75rem 1.25rem;
-            font-size: 0.875rem;
-            transition: transform 0.2s ease-in-out;
         }
-        .btn-danger:hover,
-        .btn-danger:active {
-            background-image: linear-gradient(to right, var(--accent-color-dark), var(--accent-color));
-            transform: scale(1.05);
-        }
-        .dark .btn-danger {
-            background-image: linear-gradient(to right, var(--accent-color-light), var(--accent-color));
-        }
-        .dark .btn-danger:hover,
-        .dark .btn-danger:active {
-            background-image: linear-gradient(to right, var(--accent-color), var(--accent-color-dark));
-            transform: scale(1.05);
+        .btn-danger:hover {
+            background-color: #dc2626;
         }
         .btn-edit {
-            background-image: linear-gradient(to right, var(--accent-color), var(--accent-color-light));
+            background-color: var(--accent-color-dark);
+            border-color: var(--accent-color);
             color: white;
             padding: 0.75rem 1.25rem;
             font-size: 0.875rem;
             margin-left: 0.5rem;
-            transition: transform 0.2s ease-in-out;
         }
-        .btn-edit:hover,
-        .btn-edit:active {
-            background-image: linear-gradient(to right, var(--accent-color-dark), var(--accent-color));
-            transform: scale(1.05);
+        .btn-edit:hover {
+            background-color: var(--accent-color);
         }
-        .dark .btn-edit {
-            background-image: linear-gradient(to right, var(--accent-color-light), var(--accent-color));
-        }
-        .dark .btn-edit:hover,
-        .dark .btn-edit:active {
-            background-image: linear-gradient(to right, var(--accent-color), var(--accent-color-dark));
-            transform: scale(1.05);
+        .dark .btn-edit:hover {
+            background-color: var(--accent-color-light);
         }
         .dynamic-item {
             display: flex;
@@ -317,6 +300,7 @@
             display: flex;
             justify-content: center;
             gap: 0.5rem;
+            flex-wrap: wrap; /* Allow wrapping if needed */
         }
         .dark #action-buttons {
             background-color: #1f2937;
@@ -372,18 +356,15 @@
 </head>
 <body class="p-0">
     <div class="max-w-2xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex justify-center items-center mb-6 gap-4">
             <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Presidency Meeting Agenda</h1>
             <div class="flex items-center gap-2">
                 <input type="color" id="theme-color-picker" title="Choose Theme Color" aria-label="Choose theme color" class="w-10 h-10 rounded-full cursor-pointer">
                 <button id="theme-toggle" class="btn-secondary" title="Toggle Dark Mode" aria-label="Toggle dark mode">
                     <i class="fas fa-moon"></i>
                 </button>
+                <button id="view-past-button" class="btn-secondary" aria-label="View past agendas"><i class="fas fa-history mr-1"></i> View Past Agendas</button>
             </div>
-        </div>
-
-        <div class="mb-6">
-            <button id="view-past-button" class="btn-secondary" aria-label="View past agendas"><i class="fas fa-history mr-1"></i> View Past Agendas</button>
         </div>
 
         <form id="agenda-form">
@@ -392,17 +373,17 @@
                 <div class="space-y-4">
                     <div>
                         <label for="meeting-date">Date:</label>
-                        <input type="date" id="meeting-date" name="meeting-date" required autocomplete="off">
+                        <input type="date" id="meeting-date" name="meeting-date" required autocomplete="off" placeholder="Select a date...">
                         <p class="helper-text error-text hidden" id="meeting-date-error">Required</p>
                     </div>
                     <div>
                         <label for="conducting">Conducting:</label>
-                        <input type="text" id="conducting" name="conducting" placeholder="Name of person conducting" autocomplete="name" required>
+                        <input type="text" id="conducting" name="conducting" placeholder="Enter name of person conducting..." autocomplete="name" required>
                         <p class="helper-text error-text hidden" id="conducting-error">Required</p>
                     </div>
                     <div>
                         <label for="opening-prayer">Opening Prayer:</label>
-                        <input type="text" id="opening-prayer" name="opening-prayer" placeholder="Name of person praying" autocomplete="name" required>
+                        <input type="text" id="opening-prayer" name="opening-prayer" placeholder="Enter name of person praying..." autocomplete="name" required>
                         <p class="helper-text error-text hidden" id="opening-prayer-error">Required</p>
                     </div>
                 </div>
@@ -417,7 +398,6 @@
                         <h4 class="font-semibold mt-4 mb-2">Assignments from Previous Meeting:</h4>
                         <ul id="previous-items-list" class="list-none pl-5" aria-label="Assignments from previous meeting"></ul>
                     </div>
-                    <button type="button" id="clear-follow-up-button" class="btn-secondary text-sm" aria-label="Clear completed follow-up items"><i class="fas fa-trash mr-1"></i> Clear Completed</button>
                 </div>
             </details>
 
@@ -425,7 +405,7 @@
                 <summary aria-label="Ministering section with helping hands icon"><span class="summary-icon"><i class="fas fa-hands-helping"></i></span>Ministering</summary>
                 <div class="space-y-4">
                     <label for="ministering-discussion">How can we invite and help our quorum or class come unto Christ? Support them and others?</label>
-                    <textarea id="ministering-discussion" name="ministering-discussion" placeholder="Discussion notes..."></textarea>
+                    <textarea id="ministering-discussion" name="ministering-discussion" placeholder="Enter discussion notes here..."></textarea>
                     <h4 class="font-semibold mb-2">Assignments:</h4>
                     <ul id="ministering-assignments-list" class="list-disc pl-5"></ul>
                     <button type="button" onclick="openItemModal('assignment', -1)" class="btn-secondary text-sm" aria-label="Add a new ministering assignment"><i class="fas fa-plus mr-1"></i> Add Assignment</button>
@@ -436,7 +416,7 @@
                 <summary aria-label="Sunday Quorum/Class Meetings section with open book icon"><span class="summary-icon"><i class="fas fa-book-open"></i></span>Sunday Quorum/Class Meetings</summary>
                 <div class="space-y-4">
                     <label for="sunday-discussion">What to discuss with quorum/class members? (Ref: "Counsel Together")</label>
-                    <textarea id="sunday-discussion" name="sunday-discussion" placeholder="Discussion points for Sunday..."></textarea>
+                    <textarea id="sunday-discussion" name="sunday-discussion" placeholder="Enter discussion points for Sunday here..."></textarea>
                     <h4 class="font-semibold mb-2">Upcoming Lessons:</h4>
                     <ul id="lessons-list" class="list-disc pl-5"></ul>
                     <button type="button" onclick="openItemModal('lesson', -1)" class="btn-secondary text-sm" aria-label="Add a new lesson"><i class="fas fa-plus mr-1"></i> Add Lesson</button>
@@ -447,7 +427,7 @@
                 <summary aria-label="Service & Activities section with tools icon"><span class="summary-icon"><i class="fas fa-tools"></i></span>Service & Activities</summary>
                 <div class="space-y-4">
                     <label for="skills-ideas">Skills to learn/develop? How to serve others?</label>
-                    <textarea id="skills-ideas" name="skills-ideas" placeholder="Brainstorm ideas..."></textarea>
+                    <textarea id="skills-ideas" name="skills-ideas" placeholder="Brainstorm ideas here..."></textarea>
                     <h4 class="font-semibold mb-2">Planned Service/Activities:</h4>
                     <ul id="activities-list" class="list-disc pl-5"></ul>
                     <button type="button" onclick="openItemModal('activity', -1)" class="btn-secondary text-sm" aria-label="Add a new activity"><i class="fas fa-plus mr-1"></i> Add Activity</button>
@@ -459,11 +439,11 @@
                 <div class="space-y-4">
                     <div>
                         <label for="temple-history">Temple & Family History / Sharing the Gospel:</label>
-                        <textarea id="temple-history" name="temple-history" placeholder="Notes on participation..."></textarea>
+                        <textarea id="temple-history" name="temple-history" placeholder="Enter notes on participation here..."></textarea>
                     </div>
                     <div>
                         <label for="spirit-unity">Inviting the Spirit / Fostering Unity:</label>
-                        <textarea id="spirit-unity" name="spirit-unity" placeholder="Ideas and plans..."></textarea>
+                        <textarea id="spirit-unity" name="spirit-unity" placeholder="Enter ideas and plans here..."></textarea>
                     </div>
                 </div>
             </details>
@@ -472,7 +452,7 @@
                 <summary aria-label="Leadership Instruction section with teacher icon"><span class="summary-icon"><i class="fas fa-chalkboard-teacher"></i></span>Leadership Instruction</summary>
                 <div class="space-y-4">
                     <label for="leadership-instruction">Notes from Bishopric Member or Adult Adviser:</label>
-                    <textarea id="leadership-instruction" name="leadership-instruction" placeholder="Record instructions given..."></textarea>
+                    <textarea id="leadership-instruction" name="leadership-instruction" placeholder="Record instructions given here..."></textarea>
                 </div>
             </details>
 
@@ -485,7 +465,7 @@
                     </div>
                     <div>
                         <label for="closing-prayer">Closing Prayer:</label>
-                        <input type="text" id="closing-prayer" name="closing-prayer" placeholder="Name of person praying" autocomplete="name">
+                        <input type="text" id="closing-prayer" name="closing-prayer" placeholder="Enter name of person praying..." autocomplete="name">
                     </div>
                 </div>
             </details>
@@ -493,16 +473,16 @@
             <div class="mt-8 flex flex-wrap justify-center gap-4" id="desktop-buttons">
                 <button type="button" id="save-button" class="btn-primary" aria-label="Save the current agenda"><i class="fas fa-save mr-1"></i> Save Agenda</button>
                 <button type="button" id="create-new-button" class="btn-success" aria-label="Create a new agenda"><i class="fas fa-plus mr-1"></i> Create New Agenda</button>
-                <button type="button" id="export-pdf-button" class="btn-primary" aria-label="Export agenda as PDF"><i class="fas fa-file-pdf mr-1"></i> Export as PDF</button>
-                <button type="button" id="clear-button" class="btn-secondary" aria-label="Clear the form"><i class="fas fa-eraser mr-1"></i> Clear Form</button>
+                <button type="button" id="export-pdf-button" class="btn-danger" aria-label="Export agenda as PDF"><i class="fas fa-file-pdf mr-1"></i> Export as PDF</button>
+                <button type="button" id="clear-button" style="background-color: #6b7280; border-color: #6b7280;" aria-label="Clear the form"><i class="fas fa-eraser mr-1"></i> Clear Form</button>
             </div>
         </form>
 
         <div id="action-buttons">
             <button type="button" id="mobile-save-button" class="btn-primary" title="Save Agenda" aria-label="Save the current agenda"><i class="fas fa-save"></i></button>
             <button type="button" id="mobile-create-new-button" class="btn-success" title="Create New Agenda" aria-label="Create a new agenda"><i class="fas fa-plus"></i></button>
-            <button type="button" id="mobile-export-pdf-button" class="btn-primary" title="Export as PDF" aria-label="Export agenda as PDF"><i class="fas fa-file-pdf"></i></button>
-            <button type="button" id="mobile-clear-button" class="btn-secondary" title="Clear Form" aria-label="Clear the form"><i class="fas fa-eraser"></i></button>
+            <button type="button" id="mobile-export-pdf-button" class="btn-danger" title="Export as PDF" aria-label="Export agenda as PDF"><i class="fas fa-file-pdf"></i></button>
+            <button type="button" id="mobile-clear-button" style="background-color: #6b7280; border-color: #6b7280;" title="Clear Form" aria-label="Clear the form"><i class="fas fa-eraser"></i></button>
         </div>
     </div>
 
@@ -513,7 +493,7 @@
                 <select id="load-agenda" class="flex-grow">
                     <option value="">-- Select an Agenda --</option>
                 </select>
-                <button id="load-button" class="btn-primary ml-2" aria-label="Load selected agenda">Load</button>
+                <button id="load-button" class="btn-secondary ml-2" aria-label="Load selected agenda">Load</button>
             </div>
             <button id="close-modal-button" class="btn-secondary w-full" aria-label="Close modal">Close</button>
         </div>
@@ -525,7 +505,7 @@
             <form id="item-modal-form" class="space-y-4"></form>
             <p id="item-modal-error" class="helper-text error-text hidden">Please fill in all required fields.</p>
             <div class="flex gap-4 mt-4">
-                <button type="button" id="item-modal-confirm" class="btn-primary flex-grow" aria-label="Confirm item">Confirm</button>
+                <button type="button" id="item-modal-confirm" class="btn-secondary flex-grow" aria-label="Confirm item">Confirm</button>
                 <button type="button" id="item-modal-cancel" class="btn-secondary flex-grow" aria-label="Cancel">Cancel</button>
             </div>
         </div>
@@ -560,7 +540,7 @@
             const isDark = document.documentElement.classList.toggle('dark');
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
             document.getElementById('theme-toggle').innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
-            updateThemeColor(document.getElementById('theme-color-picker').value); // Reapply colors on toggle
+            updateThemeColor(document.getElementById('theme-color-picker').value);
         }
 
         // Theme Color Handling
@@ -581,9 +561,10 @@
             root.style.setProperty('--accent-color', color);
             root.style.setProperty('--accent-color-light', darkenColor(color, -20));
             root.style.setProperty('--accent-color-dark', darkenColor(color, 10));
-            // Ensure all elements using these variables update
-            document.querySelectorAll('.btn-primary, .btn-secondary, .btn-danger, .btn-edit, summary').forEach(el => el.style.setProperty('background-color', '', ''));
-            document.querySelectorAll('input:focus, select:focus, textarea:focus').forEach(el => el.style.setProperty('border-color', '', ''));
+            document.querySelectorAll('button:not(.btn-primary):not(.btn-success):not(.btn-danger)').forEach(el => {
+                el.style.borderColor = color;
+                el.style.backgroundColor = darkenColor(color, 10);
+            });
             localStorage.setItem('themeColor', color);
         }
 
@@ -897,21 +878,6 @@
                 updateReviewItems();
                 showMessage('Item removed');
             }
-        }
-
-        // Clear Completed Follow-Ups
-        function clearCompletedFollowUps() {
-            console.log('Clearing completed follow-ups');
-            const formData = getFormData();
-            const checkboxes = document.querySelectorAll('#previous-ideas-list input[type="checkbox"]:checked, #previous-items-list input[type="checkbox"]:checked');
-            checkboxes.forEach(checkbox => {
-                delete formData.followUpStatus[checkbox.dataset.id];
-                checkbox.closest('li').remove();
-            });
-            localStorage.setItem('agenda_draft', JSON.stringify(formData));
-            updatePreviousIdeas();
-            updatePreviousItems();
-            showMessage('Completed follow-ups cleared');
         }
 
         // Get Form Data
@@ -1354,7 +1320,6 @@
             document.getElementById('mobile-export-pdf-button').addEventListener('click', exportAsPDF);
             document.getElementById('clear-button').addEventListener('click', clearForm);
             document.getElementById('mobile-clear-button').addEventListener('click', clearForm);
-            document.getElementById('clear-follow-up-button').addEventListener('click', clearCompletedFollowUps);
             document.getElementById('item-modal-confirm').addEventListener('click', () => {
                 console.log('Confirming item modal:', { type: currentModalType, index: currentModalIndex });
                 const modalForm = document.getElementById('item-modal-form');
