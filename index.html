@@ -21,7 +21,7 @@
             background-color: #f3f4f6;
             margin: 0;
             padding: 0;
-            overflow-x: hidden; /* Prevent horizontal scrolling */
+            overflow-x: hidden;
         }
         .dark body {
             background-color: #1f2937;
@@ -32,7 +32,7 @@
             margin-left: auto;
             margin-right: auto;
             padding: 1rem;
-            box-sizing: border-box; /* Ensure padding doesn't exceed width */
+            box-sizing: border-box;
         }
         @media (min-width: 640px) {
             .max-w-2xl {
@@ -55,7 +55,7 @@
             transition: background-color 0.2s ease-in-out;
         }
         .dark summary {
-            background-color: var(--accent-color-light);
+            background-color: var(--accent-color-light); /* Consistent theme color in dark mode */
         }
         summary:hover {
             background-color: var(--accent-color-dark);
@@ -102,7 +102,7 @@
             font-size: 1rem;
             box-sizing: border-box;
             font-family: 'Inter', sans-serif;
-            font-style: italic; /* Aesthetically pleasing placeholder font */
+            font-style: italic;
         }
         input[type="text"]:focus,
         input[type="date"]:focus,
@@ -163,9 +163,9 @@
             min-width: 48px;
             min-height: 48px;
             margin: 0.25rem;
-            color: white; /* Apply theme color to text */
-            border: 2px solid var(--accent-color); /* Apply theme color to border */
-            background-color: var(--accent-color-dark); /* Darker theme color for contrast */
+            color: white;
+            border: 2px solid var(--accent-color);
+            background-color: var(--accent-color-dark);
         }
         button:hover {
             background-color: var(--accent-color);
@@ -175,7 +175,7 @@
             background-color: var(--accent-color-light);
         }
         .btn-primary {
-            background-color: #10b981; /* Green for Save */
+            background-color: #10b981;
             border-color: #10b981;
             color: white;
         }
@@ -183,7 +183,7 @@
             background-color: #059669;
         }
         .btn-success {
-            background-color: #3b82f6; /* Blue for Create New */
+            background-color: #3b82f6;
             border-color: #3b82f6;
             color: white;
         }
@@ -199,7 +199,7 @@
             background-color: var(--accent-color-light);
         }
         .btn-danger {
-            background-color: #ef4444; /* Red for Export PDF */
+            background-color: #ef4444;
             border-color: #ef4444;
             color: white;
         }
@@ -300,7 +300,7 @@
             display: flex;
             justify-content: center;
             gap: 0.5rem;
-            flex-wrap: wrap; /* Allow wrapping if needed */
+            flex-wrap: wrap;
         }
         .dark #action-buttons {
             background-color: #1f2937;
@@ -356,7 +356,7 @@
 </head>
 <body class="p-0">
     <div class="max-w-2xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-        <div class="flex justify-center items-center mb-6 gap-4">
+        <div class="flex justify-center items-center mb-6 gap-4 w-full">
             <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Presidency Meeting Agenda</h1>
             <div class="flex items-center gap-2">
                 <input type="color" id="theme-color-picker" title="Choose Theme Color" aria-label="Choose theme color" class="w-10 h-10 rounded-full cursor-pointer">
@@ -470,7 +470,7 @@
                 </div>
             </details>
 
-            <div class="mt-8 flex flex-wrap justify-center gap-4" id="desktop-buttons">
+            <div class="mt-8 flex justify-center gap-4 w-full" id="desktop-buttons">
                 <button type="button" id="save-button" class="btn-primary" aria-label="Save the current agenda"><i class="fas fa-save mr-1"></i> Save Agenda</button>
                 <button type="button" id="create-new-button" class="btn-success" aria-label="Create a new agenda"><i class="fas fa-plus mr-1"></i> Create New Agenda</button>
                 <button type="button" id="export-pdf-button" class="btn-danger" aria-label="Export agenda as PDF"><i class="fas fa-file-pdf mr-1"></i> Export as PDF</button>
@@ -478,7 +478,7 @@
             </div>
         </form>
 
-        <div id="action-buttons">
+        <div id="action-buttons" class="flex justify-center w-full">
             <button type="button" id="mobile-save-button" class="btn-primary" title="Save Agenda" aria-label="Save the current agenda"><i class="fas fa-save"></i></button>
             <button type="button" id="mobile-create-new-button" class="btn-success" title="Create New Agenda" aria-label="Create a new agenda"><i class="fas fa-plus"></i></button>
             <button type="button" id="mobile-export-pdf-button" class="btn-danger" title="Export as PDF" aria-label="Export agenda as PDF"><i class="fas fa-file-pdf"></i></button>
