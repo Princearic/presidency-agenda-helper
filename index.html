@@ -175,29 +175,6 @@
         .dark .dynamic-item {
             background-color: #4b5563;
         }
-        .pending-item {
-            background-color: #fefcbf;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            margin-bottom: 0.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .dark .pending-item {
-            background-color: #6b7280;
-        }
-        .review-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 0.5rem;
-            padding: 0.5rem;
-            background-color: #f9fafb;
-            border-radius: 0.5rem;
-        }
-        .dark .review-item {
-            background-color: #4b5563;
-        }
         #message-box {
             position: fixed;
             bottom: 1.5rem;
@@ -329,17 +306,11 @@
             <details class="mb-4">
                 <summary>Follow-Up</summary>
                 <div class="space-y-4">
-                    <div>
-                        <label for="follow-up-notes">Assignments from previous meeting / ward youth council:</label>
-                        <textarea id="follow-up-notes" name="follow-up-notes" placeholder="Discuss status of previous assignments..."></textarea>
-                    </div>
-                    <div>
-                        <label for="previous-ideas">Ideas from Previous Meeting:</label>
-                        <textarea id="previous-ideas" name="previous-ideas" placeholder="Ideas carried over from the last meeting..."></textarea>
-                    </div>
                     <div id="previous-assignments-display" class="text-sm text-gray-600 dark:text-gray-300">
-                        <h4 class="font-semibold mb-2">Pending Assignments from Past Meetings:</h4>
-                        <ul id="pending-items-list" class="list-disc pl-5"></ul>
+                        <h4 class="font-semibold mb-2">Ideas from Previous Meeting:</h4>
+                        <ul id="previous-ideas-list" class="list-disc pl-5" aria-label="Ideas from previous meeting"></ul>
+                        <h4 class="font-semibold mt-4 mb-2">Assignments from Previous Meeting:</h4>
+                        <ul id="previous-items-list" class="list-disc pl-5" aria-label="Assignments from previous meeting"></ul>
                     </div>
                 </div>
             </details>
@@ -586,6 +557,33 @@
             return keys.sort();
         }
 
+        // Get Previous Agenda Key
+        function getPreviousAgendaKey(currentDate) {
+            console.log('Finding previous agenda key for date:', currentDate);
+            const keys = getSavedAgendaKeys();
+            if (!currentDate) return null;
+            const currentDateObj = new Date(currentDate + 'T00:00:00');
+            let previousKey = null;
+            let latestDate = null;
+            keys.forEach(key => {
+                try {
+                    const data = JSON.parse(localStorage.getItem(key));
+                    const agendaDate = data['meeting-date'];
+                    if (agendaDate && agendaDate < currentDate) {
+                        const agendaDateObj = new Date(agendaDate + 'T00:00:00');
+                        if (!latestDate || agendaDateObj > latestDate) {
+                            latestDate = agendaDateObj;
+                            previousKey = key;
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error parsing agenda date:', e);
+                }
+            });
+            console.log('Previous agenda key:', previousKey);
+            return previousKey;
+        }
+
         // Populate Load Agenda Dropdown
         function populateLoadAgendaDropdown() {
             const keys = getSavedAgendaKeys();
@@ -612,7 +610,8 @@
             document.getElementById('ministering-assignments-list').innerHTML = '';
             document.getElementById('lessons-list').innerHTML = '';
             document.getElementById('activities-list').innerHTML = '';
-            document.getElementById('pending-items-list').innerHTML = '';
+            document.getElementById('previous-ideas-list').innerHTML = '';
+            document.getElementById('previous-items-list').innerHTML = '';
             document.getElementById('review-items-list').innerHTML = '';
             ministeringAssignmentCount = 0;
             lessonCount = 0;
@@ -664,7 +663,7 @@
             li.className = 'dynamic-item';
             li.id = `lesson-${lessonCount}`;
             li.innerHTML = `
-                <span>Date: ${sanitizeInput(date || 'N/A')}, Teacher: ${sanitizeInput(name)}</span>
+                <span>Lesson - Date: ${sanitizeInput(date || 'N/A')}, Teacher: ${sanitizeInput(name)}</span>
                 <button type="button" class="btn-edit" onclick="openItemModal('lesson', ${lessonCount - 1})" aria-label="Edit lesson"><i class="fas fa-edit"></i></button>
                 <button type="button" class="btn-danger" onclick="removeItem('lesson-${lessonCount}')" aria-label="Remove lesson"><i class="fas fa-times"></i></button>
             `;
@@ -683,7 +682,7 @@
             li.className = 'dynamic-item';
             li.id = `activity-${activityCount}`;
             li.innerHTML = `
-                <span>Date: ${sanitizeInput(date || 'N/A')}, Activity: ${sanitizeInput(description)}, Assigned to: ${sanitizeInput(assignedTo || 'N/A')}</span>
+                <span>Activity - Date: ${sanitizeInput(date || 'N/A')}, Description: ${sanitizeInput(description)}, Assigned to: ${sanitizeInput(assignedTo || 'N/A')}</span>
                 <button type="button" class="btn-edit" onclick="openItemModal('activity', ${activityCount - 1})" aria-label="Edit activity"><i class="fas fa-edit"></i></button>
                 <button type="button" class="btn-danger" onclick="removeItem('activity-${activityCount}')" aria-label="Remove activity"><i class="fas fa-times"></i></button>
             `;
@@ -714,7 +713,7 @@
                     confirmed: formData.lessons[index].confirmed || false,
                 };
                 const li = document.getElementById(`lesson-${index + 1}`);
-                li.querySelector('span').textContent = `Date: ${sanitizeInput(data.date || 'N/A')}, Teacher: ${sanitizeInput(data.name)}`;
+                li.querySelector('span').textContent = `Lesson - Date: ${sanitizeInput(data.date || 'N/A')}, Teacher: ${sanitizeInput(data.name)}`;
                 showMessage('Lesson updated');
             } else if (type === 'activity' && formData.activities[index]) {
                 formData.activities[index] = {
@@ -724,265 +723,254 @@
                     confirmed: formData.activities[index].confirmed || false,
                 };
                 const li = document.getElementById(`activity-${index + 1}`);
-                li.querySelector('span').textContent = `Date: ${sanitizeInput(data.date || 'N/A')}, Activity: ${sanitizeInput(data.description)}, Assigned to: ${sanitizeInput(data.assignedTo || 'N/A')}`;
+                li.querySelector('span').textContent = `Activity - Date: ${sanitizeInput(data.date || 'N/A')}, Description: ${sanitizeInput(data.description)}, Assigned to: ${sanitizeInput(data.assignedTo || 'N/A')}`;
                 showMessage('Activity updated');
             }
             triggerAutosave();
             updateReviewItems();
         }
 
-        // Remove Dynamic Item
+        // Remove Item
         function removeItem(id) {
-            const item = document.getElementById(id);
-            if (item) {
-                item.remove();
+            console.log('Removing item:', id);
+            const element = document.getElementById(id);
+            if (element) {
+                element.remove();
                 triggerAutosave();
                 updateReviewItems();
                 showMessage('Item removed');
             }
         }
 
-        // Update Review Items
-        function updateReviewItems() {
-            console.log('Updating review items');
-            const list = document.getElementById('review-items-list');
-            list.innerHTML = '';
-            const data = getFormData();
-
-            // Ministering Assignments
-            if (data.ministeringAssignments && data.ministeringAssignments.length > 0) {
-                const h5 = document.createElement('h5');
-                h5.className = 'font-semibold mt-4 mb-2';
-                h5.textContent = 'Ministering Assignments';
-                list.appendChild(h5);
-                data.ministeringAssignments.forEach((item, index) => {
-                    const li = document.createElement('li');
-                    li.className = 'review-item';
-                    li.innerHTML = `
-                        <input type="checkbox" id="confirm-assign-${index}" ${item.confirmed ? 'checked' : ''} aria-label="Confirm assignment: ${sanitizeInput(item.task)}">
-                        <label for="confirm-assign-${index}">Task: ${sanitizeInput(item.task)} (Assigned to: ${sanitizeInput(item.assignedTo || 'N/A')}, Status: ${item.status})</label>
-                    `;
-                    list.appendChild(li);
-                    li.querySelector('input').addEventListener('change', (e) => {
-                        data.ministeringAssignments[index].confirmed = e.target.checked;
-                        triggerAutosave();
-                        showMessage(`Assignment ${e.target.checked ? 'confirmed' : 'unconfirmed'}`);
-                    });
-                });
-            }
-
-            // Lessons
-            if (data.lessons && data.lessons.length > 0) {
-                const h5 = document.createElement('h5');
-                h5.className = 'font-semibold mt-4 mb-2';
-                h5.textContent = 'Lessons';
-                list.appendChild(h5);
-                data.lessons.forEach((item, index) => {
-                    const li = document.createElement('li');
-                    li.className = 'review-item';
-                    li.innerHTML = `
-                        <input type="checkbox" id="confirm-lesson-${index}" ${item.confirmed ? 'checked' : ''} aria-label="Confirm lesson: ${sanitizeInput(item.name)}">
-                        <label for="confirm-lesson-${index}">Date: ${sanitizeInput(item.date || 'N/A')}, Teacher: ${sanitizeInput(item.name)}</label>
-                    `;
-                    list.appendChild(li);
-                    li.querySelector('input').addEventListener('change', (e) => {
-                        data.lessons[index].confirmed = e.target.checked;
-                        triggerAutosave();
-                        showMessage(`Lesson ${e.target.checked ? 'confirmed' : 'unconfirmed'}`);
-                    });
-                });
-            }
-
-            // Activities
-            if (data.activities && data.activities.length > 0) {
-                const h5 = document.createElement('h5');
-                h5.className = 'font-semibold mt-4 mb-2';
-                h5.textContent = 'Activities';
-                list.appendChild(h5);
-                data.activities.forEach((item, index) => {
-                    const li = document.createElement('li');
-                    li.className = 'review-item';
-                    li.innerHTML = `
-                        <input type="checkbox" id="confirm-activity-${index}" ${item.confirmed ? 'checked' : ''} aria-label="Confirm activity: ${sanitizeInput(item.description)}">
-                        <label for="confirm-activity-${index}">Date: ${sanitizeInput(item.date || 'N/A')}, Activity: ${sanitizeInput(item.description)}, Assigned to: ${sanitizeInput(item.assignedTo || 'N/A')}</label>
-                    `;
-                    list.appendChild(li);
-                    li.querySelector('input').addEventListener('change', (e) => {
-                        data.activities[index].confirmed = e.target.checked;
-                        triggerAutosave();
-                        showMessage(`Activity ${e.target.checked ? 'confirmed' : 'unconfirmed'}`);
-                    });
-                });
-            }
-        }
-
         // Get Form Data
         function getFormData() {
-            console.log('Collecting form data');
-            const formData = new FormData(form);
-            const data = {};
-            for (const [key, value] of formData.entries()) {
-                data[key] = value;
+            const data = {
+                'meeting-date': document.getElementById('meeting-date').value,
+                'conducting': document.getElementById('conducting').value,
+                'opening-prayer': document.getElementById('opening-prayer').value,
+                'ministering-discussion': document.getElementById('ministering-discussion').value,
+                'sunday-discussion': document.getElementById('sunday-discussion').value,
+                'skills-ideas': document.getElementById('skills-ideas').value,
+                'temple-history': document.getElementById('temple-history').value,
+                'spirit-unity': document.getElementById('spirit-unity').value,
+                'leadership-instruction': document.getElementById('leadership-instruction').value,
+                'closing-prayer': document.getElementById('closing-prayer').value,
+                ministeringAssignments: [],
+                lessons: [],
+                activities: [],
+            };
+            for (let i = 1; i <= ministeringAssignmentCount; i++) {
+                const li = document.getElementById(`min-assign-${i}`);
+                if (li) {
+                    const text = li.querySelector('span').textContent;
+                    const match = text.match(/Task: (.*) \(Assigned to: (.*), Status: (.*)\)/);
+                    if (match) {
+                        data.ministeringAssignments.push({
+                            task: match[1],
+                            assignedTo: match[2] === 'N/A' ? '' : match[2],
+                            status: match[3],
+                            confirmed: true,
+                        });
+                    }
+                }
             }
-            data.ministeringAssignments = [];
-            document.querySelectorAll('#ministering-assignments-list .dynamic-item').forEach((item, index) => {
-                const span = item.querySelector('span').textContent;
-                const match = span.match(/Task: (.*) \(Assigned to: (.*), Status: (.*)\)/);
-                if (match) {
-                    data.ministeringAssignments.push({
-                        task: match[1],
-                        assignedTo: match[2] === 'N/A' ? '' : match[2],
-                        status: match[3],
-                        confirmed: document.querySelector(`#confirm-assign-${index}`)?.checked || false,
-                    });
+            for (let i = 1; i <= lessonCount; i++) {
+                const li = document.getElementById(`lesson-${i}`);
+                if (li) {
+                    const text = li.querySelector('span').textContent;
+                    const match = text.match(/Lesson - Date: (.*), Teacher: (.*)/);
+                    if (match) {
+                        data.lessons.push({
+                            date: match[1] === 'N/A' ? '' : match[1],
+                            name: match[2],
+                            confirmed: true,
+                        });
+                    }
                 }
-            });
-            data.lessons = [];
-            document.querySelectorAll('#lessons-list .dynamic-item').forEach((item, index) => {
-                const span = item.querySelector('span').textContent;
-                const match = span.match(/Date: (.*), Teacher: (.*)/);
-                if (match) {
-                    data.lessons.push({
-                        date: match[1] === 'N/A' ? '' : match[1],
-                        name: match[2],
-                        confirmed: document.querySelector(`#confirm-lesson-${index}`)?.checked || false,
-                    });
+            }
+            for (let i = 1; i <= activityCount; i++) {
+                const li = document.getElementById(`activity-${i}`);
+                if (li) {
+                    const text = li.querySelector('span').textContent;
+                    const match = text.match(/Activity - Date: (.*), Description: (.*), Assigned to: (.*)/);
+                    if (match) {
+                        data.activities.push({
+                            date: match[1] === 'N/A' ? '' : match[1],
+                            description: match[2],
+                            assignedTo: match[3] === 'N/A' ? '' : match[3],
+                            confirmed: true,
+                        });
+                    }
                 }
-            });
-            data.activities = [];
-            document.querySelectorAll('#activities-list .dynamic-item').forEach((item, index) => {
-                const span = item.querySelector('span').textContent;
-                const match = span.match(/Date: (.*), Activity: (.*), Assigned to: (.*)/);
-                if (match) {
-                    data.activities.push({
-                        date: match[1] === 'N/A' ? '' : match[1],
-                        description: match[2],
-                        assignedTo: match[3] === 'N/A' ? '' : match[3],
-                        confirmed: document.querySelector(`#confirm-activity-${index}`)?.checked || false,
-                    });
-                }
-            });
-            console.log('Form data collected:', data);
+            }
             return data;
         }
 
-        // Populate Form
-        function populateForm(data, showPending = true) {
-            console.log('Populating form with data:', data);
-            clearForm();
-            for (const key in data) {
-                if (form.elements[key]) {
-                    form.elements[key].value = data[key];
-                }
+        // Update Previous Ideas
+        function updatePreviousIdeas() {
+            console.log('Updating previous ideas');
+            const previousIdeasList = document.getElementById('previous-ideas-list');
+            previousIdeasList.innerHTML = '';
+            const currentDate = document.getElementById('meeting-date').value;
+            const previousKey = getPreviousAgendaKey(currentDate);
+            if (!previousKey) {
+                console.log('No previous agenda found');
+                return;
             }
-            if (data.ministeringAssignments) {
-                data.ministeringAssignments.forEach(item => {
-                    addMinisteringAssignment(item.task, item.assignedTo, item.status, item.confirmed);
-                });
-            }
-            if (data.lessons) {
-                data.lessons.forEach(item => {
-                    addLesson(item.date, item.name, item.confirmed);
-                });
-            }
-            if (data.activities) {
-                data.activities.forEach(item => {
-                    addActivity(item.date, item.description, item.assignedTo, item.confirmed);
-                });
-            }
-            if (showPending) {
-                updatePendingItems();
-            } else {
-                document.getElementById('previous-assignments-display').style.display = 'none';
-            }
-        }
-
-        // Update Pending Items
-        function updatePendingItems() {
-            console.log('Updating pending items');
-            const pendingItemsList = document.getElementById('pending-items-list');
-            const pendingItemsDisplay = document.getElementById('previous-assignments-display');
-            pendingItemsList.innerHTML = '';
-            let hasPendingItems = false;
-            const keys = getSavedAgendaKeys();
-            keys.forEach(key => {
-                try {
-                    const data = JSON.parse(localStorage.getItem(key));
-                    const meetingDate = data['meeting-date'] || key.replace('agenda_', '');
-                    if (data.ministeringAssignments) {
-                        data.ministeringAssignments.forEach((item, index) => {
-                            if (item.status === 'Pending') {
-                                const li = document.createElement('li');
-                                li.className = 'pending-item';
-                                li.innerHTML = `
-                                    <span><i class="fas fa-tasks mr-2"></i>${sanitizeInput(item.task)} (Assigned to: ${sanitizeInput(item.assignedTo || 'N/A')}, Date: ${meetingDate})</span>
-                                    <button type="button" class="btn-success" onclick="markPendingDone('${key}', ${index})" aria-label="Mark assignment as done"><i class="fas fa-check mr-1"></i>Mark as Done</button>
-                                `;
-                                pendingItemsList.appendChild(li);
-                                hasPendingItems = true;
-                            }
-                        });
-                    }
-                } catch (e) {
-                    console.error('Error parsing agenda data:', e);
-                }
-            });
-            pendingItemsDisplay.style.display = hasPendingItems ? 'block' : 'none';
-        }
-
-        // Mark Pending Item as Done
-        function markPendingDone(agendaKey, index) {
-            console.log('Marking pending item as done:', { agendaKey, index });
             try {
-                const data = JSON.parse(localStorage.getItem(agendaKey));
-                if (data && data.ministeringAssignments[index]) {
-                    data.ministeringAssignments[index].status = 'Done';
-                    localStorage.setItem(agendaKey, JSON.stringify(data));
-                    updatePendingItems();
-                    showMessage('Assignment marked as done.');
-                } else {
-                    showMessage('Assignment not found.', true);
-                }
+                const previousData = JSON.parse(localStorage.getItem(previousKey));
+                const ideas = [
+                    { label: 'Skills/Service', value: previousData['skills-ideas'] },
+                    { label: 'Sunday Discussion', value: previousData['sunday-discussion'] },
+                    { label: 'Temple & Family History', value: previousData['temple-history'] },
+                    { label: 'Spirit/Unity', value: previousData['spirit-unity'] },
+                ];
+                let hasItems = false;
+                ideas.forEach(idea => {
+                    if (idea.value) {
+                        const li = document.createElement('li');
+                        li.className = 'dynamic-item';
+                        li.textContent = `${idea.label}: ${sanitizeInput(idea.value)}`;
+                        previousIdeasList.appendChild(li);
+                        hasItems = true;
+                    }
+                });
+                document.getElementById('previous-assignments-display').style.display = hasItems ? 'block' : 'none';
             } catch (e) {
-                console.error('Error updating pending item:', e);
-                showMessage('Error updating assignment.', true);
+                console.error('Error updating previous ideas:', e);
             }
+        }
+
+        // Update Previous Items
+        function updatePreviousItems() {
+            console.log('Updating previous items');
+            const previousItemsList = document.getElementById('previous-items-list');
+            previousItemsList.innerHTML = '';
+            const currentDate = document.getElementById('meeting-date').value;
+            const previousKey = getPreviousAgendaKey(currentDate);
+            let hasItems = false;
+            if (previousKey) {
+                try {
+                    const previousData = JSON.parse(localStorage.getItem(previousKey));
+                    previousData.ministeringAssignments?.forEach(assign => {
+                        const li = document.createElement('li');
+                        li.className = 'dynamic-item';
+                        li.textContent = `Task: ${sanitizeInput(assign.task)} (Assigned to: ${sanitizeInput(assign.assignedTo || 'N/A')}, Status: ${assign.status})`;
+                        previousItemsList.appendChild(li);
+                        hasItems = true;
+                    });
+                    previousData.lessons?.forEach(lesson => {
+                        const li = document.createElement('li');
+                        li.className = 'dynamic-item';
+                        li.textContent = `Lesson - Date: ${sanitizeInput(lesson.date || 'N/A')}, Teacher: ${sanitizeInput(lesson.name)}`;
+                        previousItemsList.appendChild(li);
+                        hasItems = true;
+                    });
+                    previousData.activities?.forEach(activity => {
+                        const li = document.createElement('li');
+                        li.className = 'dynamic-item';
+                        li.textContent = `Activity - Date: ${sanitizeInput(activity.date || 'N/A')}, Description: ${sanitizeInput(activity.description)}, Assigned to: ${sanitizeInput(activity.assignedTo || 'N/A')}`;
+                        previousItemsList.appendChild(li);
+                        hasItems = true;
+                    });
+                } catch (e) {
+                    console.error('Error updating previous items:', e);
+                }
+            }
+            document.getElementById('previous-assignments-display').style.display = hasItems || document.getElementById('previous-ideas-list').children.length > 0 ? 'block' : 'none';
+        }
+
+        // Update Review Items
+        function updateReviewItems() {
+            console.log('Updating review items');
+            const reviewList = document.getElementById('review-items-list');
+            reviewList.innerHTML = '';
+            const formData = getFormData();
+            const items = [
+                ...formData.ministeringAssignments.map(a => `Ministering Assignment: ${a.task} (Assigned to: ${a.assignedTo || 'N/A'}, Status: ${a.status})`),
+                ...formData.lessons.map(l => `Lesson - Date: ${l.date || 'N/A'}, Teacher: ${l.name}`),
+                ...formData.activities.map(a => `Activity - Date: ${a.date || 'N/A'}, Description: ${a.description}, Assigned to: ${a.assignedTo || 'N/A'}`),
+            ];
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'review-item';
+                div.textContent = item;
+                reviewList.appendChild(div);
+            });
+        }
+
+        // Populate Form
+        function populateForm(data) {
+            console.log('Populating form with data:', data);
+            clearDynamicLists();
+            document.getElementById('meeting-date').value = data['meeting-date'] || '';
+            document.getElementById('conducting').value = data['conducting'] || '';
+            document.getElementById('opening-prayer').value = data['opening-prayer'] || '';
+            document.getElementById('ministering-discussion').value = data['ministering-discussion'] || '';
+            document.getElementById('sunday-discussion').value = data['sunday-discussion'] || '';
+            document.getElementById('skills-ideas').value = data['skills-ideas'] || '';
+            document.getElementById('temple-history').value = data['temple-history'] || '';
+            document.getElementById('spirit-unity').value = data['spirit-unity'] || '';
+            document.getElementById('leadership-instruction').value = data['leadership-instruction'] || '';
+            document.getElementById('closing-prayer').value = data['closing-prayer'] || '';
+            data.ministeringAssignments?.forEach(a => addMinisteringAssignment(a.task, a.assignedTo, a.status, a.confirmed));
+            data.lessons?.forEach(l => addLesson(l.date, l.name, l.confirmed));
+            data.activities?.forEach(a => addActivity(a.date, a.description, a.assignedTo, a.confirmed));
+            updatePreviousIdeas();
+            updatePreviousItems();
+            updateReviewItems();
+            resetValidation();
+        }
+
+        // Save Agenda
+        function saveAgenda() {
+            console.log('Saving agenda');
+            const formData = getFormData();
+            if (!formData['meeting-date'] || !formData['conducting'] || !formData['opening-prayer']) {
+                showMessage('Please fill in all required fields', true);
+                validateForm();
+                return;
+            }
+            const key = `agenda_${formData['meeting-date']}`;
+            localStorage.setItem(key, JSON.stringify(formData));
+            localStorage.removeItem('agenda_draft');
+            showMessage('Agenda saved');
+        }
+
+        // Autosave
+        function triggerAutosave() {
+            console.log('Triggering autosave');
+            clearTimeout(autosaveTimeout);
+            autosaveTimeout = setTimeout(() => {
+                const formData = getFormData();
+                localStorage.setItem('agenda_draft', JSON.stringify(formData));
+                console.log('Autosaved draft');
+            }, 1000);
         }
 
         // Validate Form
-        function validateForm(data) {
-            console.log('Validating form data:', data);
-            const errors = [];
-            const fields = [
-                { id: 'meeting-date', name: 'Meeting Date' },
-                { id: 'conducting', name: 'Conducting' },
-                { id: 'opening-prayer', name: 'Opening Prayer' },
-            ];
-            fields.forEach(field => {
-                if (!data[field.id]) {
-                    errors.push(`${field.name} is required.`);
+        function validateForm() {
+            console.log('Validating form');
+            const fields = ['meeting-date', 'conducting', 'opening-prayer'];
+            let isValid = true;
+            fields.forEach(id => {
+                const input = document.getElementById(id);
+                const error = document.getElementById(`${id}-error`);
+                if (!input.value) {
+                    input.classList.add('error-border');
+                    error.classList.remove('hidden');
+                    isValid = false;
+                } else {
+                    input.classList.remove('error-border');
+                    error.classList.add('hidden');
                 }
             });
-            return errors;
+            return isValid;
         }
 
-        // Validate Modal
-        function validateModal(type) {
-            if (type === 'assignment') {
-                const task = document.getElementById('modal-task').value;
-                return task.trim() !== '';
-            } else if (type === 'lesson') {
-                const name = document.getElementById('modal-name').value;
-                return name.trim() !== '';
-            } else if (type === 'activity') {
-                const desc = document.getElementById('modal-desc').value;
-                return desc.trim() !== '';
-            }
-            return true;
-        }
-
-        // Reset Validation UI
+        // Reset Validation
         function resetValidation() {
+            console.log('Resetting validation');
             const fields = ['meeting-date', 'conducting', 'opening-prayer'];
             fields.forEach(id => {
                 const input = document.getElementById(id);
@@ -992,294 +980,111 @@
             });
         }
 
-        // Show Validation Errors
-        function showValidationErrors(errors) {
-            resetValidation();
-            errors.forEach(error => {
-                const fieldId = error.includes('Meeting Date') ? 'meeting-date' :
-                               error.includes('Conducting') ? 'conducting' :
-                               error.includes('Opening Prayer') ? 'opening-prayer' : null;
-                if (fieldId) {
-                    const input = document.getElementById(fieldId);
-                    const errorEl = document.getElementById(`${fieldId}-error`);
-                    input.classList.add('error-border');
-                    errorEl.classList.remove('hidden');
-                }
-            });
-        }
-
-        // Save Agenda
-        function saveAgenda() {
-            console.log('Saving agenda');
-            const data = getFormData();
-            const errors = validateForm(data);
-            if (errors.length > 0) {
-                showValidationErrors(errors);
-                showMessage(errors.join(' '), true);
-                return;
-            }
-            const key = `agenda_${data['meeting-date']}`;
-            try {
-                localStorage.setItem(key, JSON.stringify(data));
-                localStorage.removeItem('agenda_draft');
-                showMessage(`Agenda for ${data['meeting-date']} saved successfully!`);
-                resetValidation();
-                updatePendingItems();
-            } catch (e) {
-                console.error('Error saving to localStorage:', e);
-                showMessage('Error saving agenda. Storage might be full.', true);
-            }
-        }
-
-        // Autosave
-        function triggerAutosave() {
-            console.log('Triggering autosave');
-            clearTimeout(autosaveTimeout);
-            autosaveTimeout = setTimeout(() => {
-                const data = getFormData();
-                if (data['meeting-date']) {
-                    try {
-                        localStorage.setItem('agenda_draft', JSON.stringify(data));
-                        showMessage('Draft saved');
-                    } catch (e) {
-                        console.error('Error autosaving draft:', e);
-                        showMessage('Error saving draft.', true);
-                    }
-                }
-            }, 1000);
-        }
-
-        // Load Agenda
-        function loadAgenda() {
-            console.log('Loading agenda');
-            const selectedKey = loadAgendaSelect.value;
-            if (!selectedKey) {
-                showMessage('Please select an agenda to load.', true);
-                return;
-            }
-            try {
-                const dataString = localStorage.getItem(selectedKey);
-                if (dataString) {
-                    const data = JSON.parse(dataString);
-                    populateForm(data, false);
-                    showMessage(`Loaded agenda: ${selectedKey.replace('agenda_', '')}`);
-                    closeLoadModal();
-                } else {
-                    showMessage('Could not find saved data for this agenda.', true);
-                }
-            } catch (e) {
-                console.error('Error loading agenda:', e);
-                showMessage('Error loading agenda.', true);
-            }
-        }
-
         // Create New Agenda
         function createNewAgenda() {
             console.log('Creating new agenda');
-            const currentData = getFormData();
-            const errors = validateForm(currentData);
-            if (errors.length > 0) {
-                showValidationErrors(errors);
-                showMessage('Please complete required fields before creating a new agenda.', true);
-                return;
-            }
-            const ideas = [];
-            if (currentData['skills-ideas']) ideas.push(`- Skills/Service: ${currentData['skills-ideas']}`);
-            if (currentData['sunday-discussion']) ideas.push(`- Sunday Discussion: ${currentData['sunday-discussion']}`);
-            if (currentData['temple-history']) ideas.push(`- Temple & Family History: ${currentData['temple-history']}`);
-            if (currentData['spirit-unity']) ideas.push(`- Spirit & Unity: ${currentData['spirit-unity']}`);
-            const previousIdeas = ideas.length > 0 ? ideas.join('\n') : '';
             clearForm();
-            const lastDateStr = currentData['meeting-date'];
-            if (lastDateStr) {
-                try {
-                    const lastDate = new Date(lastDateStr + 'T00:00:00');
-                    if (!isNaN(lastDate.getTime())) {
-                        lastDate.setDate(lastDate.getDate() + 7);
-                        const year = lastDate.getFullYear();
-                        const month = String(lastDate.getMonth() + 1).padStart(2, '0');
-                        const day = String(lastDate.getDate()).padStart(2, '0');
-                        form.elements['meeting-date'].value = `${year}-${month}-${day}`;
-                    }
-                } catch (e) {
-                    console.error('Error calculating next date:', e);
-                }
-            }
-            form.elements['previous-ideas'].value = previousIdeas;
-            updatePendingItems();
-            showMessage('New agenda created. Pending assignments and ideas carried over.');
-            document.querySelector('details:nth-of-type(2)').open = true;
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('meeting-date').value = today;
+            updatePreviousIdeas();
+            updatePreviousItems();
+            showMessage('New agenda created');
         }
 
         // Export as PDF
         function exportAsPDF() {
             console.log('Exporting as PDF');
             if (!jsPDF) {
-                showMessage('PDF library not loaded. Please try again.', true);
+                showMessage('PDF library not loaded', true);
                 return;
             }
-            const data = getFormData();
-            const errors = validateForm(data);
-            if (errors.length > 0) {
-                showValidationErrors(errors);
-                showMessage('Please complete required fields before exporting.', true);
+            const formData = getFormData();
+            if (!formData['meeting-date']) {
+                showMessage('Please enter a meeting date', true);
                 return;
             }
-            try {
-                const doc = new jsPDF();
-                let y = 10;
-                const pageHeight = doc.internal.pageSize.height;
-                const maxWidth = 180;
-
-                function addText(text, x, y, options = {}) {
-                    if (y > pageHeight - 20) {
-                        doc.addPage();
-                        y = 10;
-                    }
-                    doc.text(text, x, y, options);
-                    return y + (options.maxWidth ? doc.getTextDimensions(text, options).h : 7);
-                }
-
-                doc.setFontSize(16);
-                y = addText('Presidency Meeting Agenda', 10, y);
-                doc.setFontSize(12);
-                y = addText(`Date: ${data['meeting-date'] || 'N/A'}`, 10, y);
-                y = addText(`Conducting: ${data['conducting'] || 'N/A'}`, 10, y);
-                y = addText(`Opening Prayer: ${data['opening-prayer'] || 'N/A'}`, 10, y);
-                y += 5;
-
-                doc.setFontSize(14);
-                y = addText('Follow-Up', 10, y);
-                doc.setFontSize(12);
-                y = addText(data['follow-up-notes'] || 'No notes', 10, y, { maxWidth });
-                if (data['previous-ideas']) {
-                    y = addText('Ideas from Previous Meeting:', 10, y);
-                    y = addText(data['previous-ideas'], 15, y, { maxWidth });
-                }
-                const pendingItems = [];
-                getSavedAgendaKeys().forEach(key => {
-                    const agendaData = JSON.parse(localStorage.getItem(key));
-                    const meetingDate = agendaData['meeting-date'] || key.replace('agenda_', '');
-                    if (agendaData.ministeringAssignments) {
-                        agendaData.ministeringAssignments.forEach(item => {
-                            if (item.status === 'Pending') {
-                                pendingItems.push(`- ${item.task || 'No task'} (Assigned to: ${item.assignedTo || 'N/A'}, Date: ${meetingDate})`);
-                            }
+            const doc = new jsPDF();
+            doc.setFontSize(16);
+            doc.text('Presidency Meeting Agenda', 20, 20);
+            doc.setFontSize(12);
+            let y = 30;
+            const addSection = (title, content, isList = false) => {
+                if (content) {
+                    doc.text(title, 20, y);
+                    y += 10;
+                    if (isList) {
+                        content.forEach(item => {
+                            doc.text(`• ${item}`, 25, y);
+                            y += 7;
                         });
+                    } else {
+                        doc.text(content, 25, y);
+                        y += 10;
                     }
-                });
-                if (pendingItems.length > 0) {
-                    y = addText('Pending Assignments:', 10, y);
-                    pendingItems.forEach(item => {
-                        y = addText(item, 15, y, { maxWidth });
-                    });
-                } else {
-                    y = addText('No pending assignments', 15, y);
+                    y += 5;
                 }
+            };
+            addSection('Meeting Details', [
+                `Date: ${formData['meeting-date'] || 'N/A'}`,
+                `Conducting: ${formData['conducting'] || 'N/A'}`,
+                `Opening Prayer: ${formData['opening-prayer'] || 'N/A'}`,
+            ], true);
 
-                doc.setFontSize(14);
-                y = addText('Ministering', 10, y);
-                doc.setFontSize(12);
-                y = addText(data['ministering-discussion'] || 'No notes', 10, y, { maxWidth });
-                if (data.ministeringAssignments && data.ministeringAssignments.length > 0) {
-                    data.ministeringAssignments.forEach(item => {
-                        const text = `- ${item.task || 'No task'} (Assigned to: ${item.assignedTo || 'N/A'}, Status: ${item.status || 'N/A'})`;
-                        y = addText(text, 15, y);
-                    });
-                } else {
-                    y = addText('No assignments', 15, y);
-                }
-
-                doc.setFontSize(14);
-                y = addText('Review & Closing', 10, y);
-                doc.setFontSize(12);
-                if (data.ministeringAssignments && data.ministeringAssignments.length > 0) {
-                    y = addText('Ministering Assignments:', 10, y);
-                    data.ministeringAssignments.forEach(item => {
-                        const text = `- ${item.task || 'No task'} (Assigned to: ${item.assignedTo || 'N/A'}, Status: ${item.status || 'N/A'}, Confirmed: ${item.confirmed ? 'Yes' : 'No'})`;
-                        y = addText(text, 15, y);
-                    });
-                }
-                if (data.lessons && data.lessons.length > 0) {
-                    y = addText('Lessons:', 10, y);
-                    data.lessons.forEach(item => {
-                        const text = `- Date: ${item.date || 'N/A'}, Teacher: ${item.name || 'N/A'}, Confirmed: ${item.confirmed ? 'Yes' : 'No'}`;
-                        y = addText(text, 15, y);
-                    });
-                }
-                if (data.activities && data.activities.length > 0) {
-                    y = addText('Activities:', 10, y);
-                    data.activities.forEach(item => {
-                        const text = `- Date: ${item.date || 'N/A'}, Activity: ${item.description || 'N/A'}, Assigned to: ${item.assignedTo || 'N/A'}, Confirmed: ${item.confirmed ? 'Yes' : 'No'}`;
-                        y = addText(text, 15, y);
-                    });
-                }
-                if (!data.ministeringAssignments?.length && !data.lessons?.length && !data.activities?.length) {
-                    y = addText('No items for review', 15, y);
-                }
-                y = addText(`Closing Prayer: ${data['closing-prayer'] || 'N/A'}`, 10, y);
-
-                doc.save(`Agenda_${data['meeting-date'] || 'untitled'}.pdf`);
-                showMessage('Agenda exported as PDF.');
-            } catch (e) {
-                console.error('Error exporting PDF:', e);
-                showMessage('Error exporting PDF.', true);
-            }
-        }
-
-        // Accordion Behavior
-        function setupAccordion() {
-            const accordionToggle = document.getElementById('accordion-toggle');
-            const detailsElements = document.querySelectorAll('details');
-            detailsElements.forEach(detail => {
-                detail.addEventListener('toggle', () => {
-                    if (accordionToggle.checked && window.innerWidth < 640 && detail.open) {
-                        detailsElements.forEach(other => {
-                            if (other !== detail) other.open = false;
-                        });
-                    }
-                });
-            });
-        }
-
-        // Modal Confirm
-        function confirmItem() {
-            console.log('Confirming item:', { type: currentModalType, index: currentModalIndex });
-            if (!validateModal(currentModalType)) {
-                document.getElementById('item-modal-error').classList.remove('hidden');
-                return;
-            }
-            if (currentModalType === 'assignment') {
-                const task = document.getElementById('modal-task').value;
-                const assignedTo = document.getElementById('modal-assigned').value;
-                const status = document.getElementById('modal-status').value;
-                if (currentModalIndex === -1) {
-                    addMinisteringAssignment(task, assignedTo, status);
-                } else {
-                    updateItem('assignment', currentModalIndex, { task, assignedTo, status });
-                }
-            } else if (currentModalType === 'lesson') {
-                const date = document.getElementById('modal-date').value;
-                const name = document.getElementById('modal-name').value;
-                if (currentModalIndex === -1) {
-                    addLesson(date, name);
-                } else {
-                    updateItem('lesson', currentModalIndex, { date, name });
-                }
-            } else if (currentModalType === 'activity') {
-                const date = document.getElementById('modal-date').value;
-                const description = document.getElementById('modal-desc').value;
-                const assignedTo = document.getElementById('modal-assigned').value;
-                if (currentModalIndex === -1) {
-                    addActivity(date, description, assignedTo);
-                } else {
-                    updateItem('activity', currentModalIndex, { date, description, assignedTo });
+            const previousKey = getPreviousAgendaKey(formData['meeting-date']);
+            if (previousKey) {
+                try {
+                    const previousData = JSON.parse(localStorage.getItem(previousKey));
+                    const ideas = [
+                        previousData['skills-ideas'] ? `Skills/Service: ${previousData['skills-ideas']}` : '',
+                        previousData['sunday-discussion'] ? `Sunday Discussion: ${previousData['sunday-discussion']}` : '',
+                        previousData['temple-history'] ? `Temple & Family History: ${previousData['temple-history']}` : '',
+                        previousData['spirit-unity'] ? `Spirit/Unity: ${previousData['spirit-unity']}` : '',
+                    ].filter(i => i);
+                    addSection('Ideas from Previous Meeting', ideas, true);
+                    const previousItems = [
+                        ...previousData.ministeringAssignments?.map(a => `Task: ${a.task} (Assigned to: ${a.assignedTo || 'N/A'}, Status: ${a.status})`) || [],
+                        ...previousData.lessons?.map(l => `Lesson - Date: ${l.date || 'N/A'}, Teacher: ${l.name}`) || [],
+                        ...previousData.activities?.map(a => `Activity - Date: ${a.date || 'N/A'}, Description: ${a.description}, Assigned to: ${a.assignedTo || 'N/A'}`) || [],
+                    ];
+                    addSection('Assignments from Previous Meeting', previousItems, true);
+                } catch (e) {
+                    console.error('Error exporting previous items to PDF:', e);
                 }
             }
-            closeItemModal();
+            addSection('Ministering', formData['ministering-discussion']);
+            addSection('Ministering Assignments', formData.ministeringAssignments.map(a => `Task: ${a.task} (Assigned to: ${a.assignedTo || 'N/A'}, Status: ${a.status})`), true);
+            addSection('Sunday Quorum/Class Meetings', formData['sunday-discussion']);
+            addSection('Upcoming Lessons', formData.lessons.map(l => `Date: ${l.date || 'N/A'}, Teacher: ${l.name}`), true);
+            addSection('Service & Activities', formData['skills-ideas']);
+            addSection('Planned Service/Activities', formData.activities.map(a => `Date: ${a.date || 'N/A'}, Description: ${a.description}, Assigned to: ${a.assignedTo || 'N/A'}`), true);
+            addSection('Temple & Family History / Sharing the Gospel', formData['temple-history']);
+            addSection('Inviting the Spirit / Fostering Unity', formData['spirit-unity']);
+            addSection('Leadership Instruction', formData['leadership-instruction']);
+            addSection('Closing Prayer', formData['closing-prayer']);
+            doc.save(`agenda_${formData['meeting-date'] || 'export'}.pdf`);
+            showMessage('PDF exported');
         }
 
         // Event Listeners
+        document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+        document.getElementById('view-past-button').addEventListener('click', openLoadModal);
+        document.getElementById('close-modal-button').addEventListener('click', closeLoadModal);
+        document.getElementById('load-button').addEventListener('click', () => {
+            const key = loadAgendaSelect.value;
+            if (key) {
+                try {
+                    const data = JSON.parse(localStorage.getItem(key));
+                    populateForm(data);
+                    closeLoadModal();
+                    showMessage('Agenda loaded');
+                } catch (e) {
+                    showMessage('Error loading agenda', true);
+                    console.error('Error loading agenda:', e);
+                }
+            } else {
+                showMessage('Please select an agenda', true);
+            }
+        });
         document.getElementById('save-button').addEventListener('click', saveAgenda);
         document.getElementById('mobile-save-button').addEventListener('click', saveAgenda);
         document.getElementById('create-new-button').addEventListener('click', createNewAgenda);
@@ -1288,29 +1093,75 @@
         document.getElementById('mobile-export-pdf-button').addEventListener('click', exportAsPDF);
         document.getElementById('clear-button').addEventListener('click', clearForm);
         document.getElementById('mobile-clear-button').addEventListener('click', clearForm);
-        document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-        document.getElementById('view-past-button').addEventListener('click', openLoadModal);
-        document.getElementById('load-button').addEventListener('click', loadAgenda);
-        document.getElementById('close-modal-button').addEventListener('click', closeLoadModal);
-        document.getElementById('item-modal-confirm').addEventListener('click', confirmItem);
+        document.getElementById('item-modal-confirm').addEventListener('click', () => {
+            console.log('Confirming item modal:', { currentModalType, currentModalIndex });
+            const modalForm = document.getElementById('item-modal-form');
+            const requiredInputs = modalForm.querySelectorAll('input[required]');
+            let isValid = true;
+            requiredInputs.forEach(input => {
+                if (!input.value) {
+                    input.classList.add('error-border');
+                    isValid = false;
+                } else {
+                    input.classList.remove('error-border');
+                }
+            });
+            if (!isValid) {
+                document.getElementById('item-modal-error').classList.remove('hidden');
+                return;
+            }
+            let data = {};
+            if (currentModalType === 'assignment') {
+                data = {
+                    task: document.getElementById('modal-task').value,
+                    assignedTo: document.getElementById('modal-assigned').value,
+                    status: document.getElementById('modal-status').value,
+                };
+                if (currentModalIndex === -1) {
+                    addMinisteringAssignment(data.task, data.assignedTo, data.status, true);
+                } else {
+                    updateItem('assignment', currentModalIndex, data);
+                }
+            } else if (currentModalType === 'lesson') {
+                data = {
+                    date: document.getElementById('modal-date').value,
+                    name: document.getElementById('modal-name').value,
+                };
+                if (currentModalIndex === -1) {
+                    addLesson(data.date, data.name, true);
+                } else {
+                    updateItem('lesson', currentModalIndex, data);
+                }
+            } else if (currentModalType === 'activity') {
+                data = {
+                    date: document.getElementById('modal-date').value,
+                    description: document.getElementById('modal-desc').value,
+                    assignedTo: document.getElementById('modal-assigned').value,
+                };
+                if (currentModalIndex === -1) {
+                    addActivity(data.date, data.description, data.assignedTo, true);
+                } else {
+                    updateItem('activity', currentModalIndex, data);
+                }
+            }
+            closeItemModal();
+        });
         document.getElementById('item-modal-cancel').addEventListener('click', closeItemModal);
         form.addEventListener('input', triggerAutosave);
-        form.addEventListener('change', triggerAutosave);
-
-        // Initial Setup
-        window.addEventListener('load', () => {
-            console.log('Initializing app');
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            if (!form.elements['meeting-date'].value) {
-                form.elements['meeting-date'].value = `${year}-${month}-${day}`;
+        document.getElementById('accordion-toggle').addEventListener('change', (e) => {
+            const details = document.querySelectorAll('details');
+            if (e.target.checked) {
+                details.forEach(d => d.removeAttribute('open'));
+            } else {
+                details.forEach(d => d.setAttribute('open', ''));
             }
-            document.getElementById('meeting-date').focus();
-            document.getElementById('previous-assignments-display').style.display = 'none';
+        });
+
+        // Initialize
+        (function init() {
+            console.log('Initializing app');
             const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark') {
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.classList.add('dark');
                 document.getElementById('theme-toggle').innerHTML = '<i class="fas fa-sun"></i>';
             }
@@ -1319,14 +1170,18 @@
                 try {
                     const data = JSON.parse(draft);
                     populateForm(data);
-                    showMessage('Loaded draft from last session.');
                 } catch (e) {
                     console.error('Error loading draft:', e);
                 }
+            } else {
+                document.getElementById('meeting-date').value = new Date().toISOString().split('T')[0];
+                updatePreviousIdeas();
+                updatePreviousItems();
             }
-            updatePendingItems();
-            setupAccordion();
-        });
+            if (window.innerWidth <= 640) {
+                document.getElementById('action-buttons').style.display = 'flex';
+            }
+        })();
     </script>
 </body>
 </html>
