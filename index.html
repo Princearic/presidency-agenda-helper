@@ -51,6 +51,10 @@
         details[open] > summary::after {
             transform: rotate(180deg);
         }
+        .summary-icon {
+            margin-right: 0.5rem;
+            font-size: 1.125rem;
+        }
         details > div {
             padding: 1.25rem;
             background-color: white;
@@ -176,15 +180,13 @@
             background-color: #4b5563;
         }
         .checked-item {
-            color: #6b7280;
+            color: #9ca3af;
+            text-decoration: line-through;
+            font-style: italic;
         }
         .dark .checked-item {
-            color: #9ca3af;
+            color: #6b7280;
         }
-        .checked-item {
-            text-decoration: line-through;
-        }
-        
         #message-box {
             position: fixed;
             bottom: 1.5rem;
@@ -293,7 +295,7 @@
 
         <form id="agenda-form">
             <details class="mb-4" open>
-                <summary>Meeting Details</summary>
+                <summary aria-label="Meeting Details section with calendar icon"><span class="summary-icon"><i class="fas fa-calendar-alt"></i></span>Meeting Details</summary>
                 <div class="space-y-4">
                     <div>
                         <label for="meeting-date">Date:</label>
@@ -314,7 +316,7 @@
             </details>
 
             <details class="mb-4">
-                <summary>Follow-Up</summary>
+                <summary aria-label="Follow-Up section with check circle icon"><span class="summary-icon"><i class="fas fa-check-circle"></i></span>Follow-Up</summary>
                 <div class="space-y-4">
                     <div id="previous-assignments-display" class="text-gray-800 dark:text-white">
                         <h4 class="font-semibold mb-2">Ideas from Previous Meeting:</h4>
@@ -326,7 +328,7 @@
             </details>
 
             <details class="mb-4">
-                <summary>Ministering</summary>
+                <summary aria-label="Ministering section with helping hands icon"><span class="summary-icon"><i class="fas fa-hands-helping"></i></span>Ministering</summary>
                 <div>
                     <label for="ministering-discussion">How can we invite and help our quorum or class come unto Christ? Support them and others?</label>
                     <textarea id="ministering-discussion" name="ministering-discussion" placeholder="Discussion notes..."></textarea>
@@ -337,7 +339,7 @@
             </details>
 
             <details class="mb-4">
-                <summary>Sunday Quorum/Class Meetings</summary>
+                <summary aria-label="Sunday Quorum/Class Meetings section with open book icon"><span class="summary-icon"><i class="fas fa-book-open"></i></span>Sunday Quorum/Class Meetings</summary>
                 <div>
                     <label for="sunday-discussion">What to discuss with quorum/class members? (Ref: "Counsel Together")</label>
                     <textarea id="sunday-discussion" name="sunday-discussion" placeholder="Discussion points for Sunday..."></textarea>
@@ -348,7 +350,7 @@
             </details>
 
             <details class="mb-4">
-                <summary>Service & Activities</summary>
+                <summary aria-label="Service & Activities section with tools icon"><span class="summary-icon"><i class="fas fa-tools"></i></span>Service & Activities</summary>
                 <div>
                     <label for="skills-ideas">Skills to learn/develop? How to serve others?</label>
                     <textarea id="skills-ideas" name="skills-ideas" placeholder="Brainstorm ideas..."></textarea>
@@ -359,7 +361,7 @@
             </details>
 
             <details class="mb-4">
-                <summary>Other Discussion Items</summary>
+                <summary aria-label="Other Discussion Items section with comments icon"><span class="summary-icon"><i class="fas fa-comments"></i></span>Other Discussion Items</summary>
                 <div class="space-y-4">
                     <div>
                         <label for="temple-history">Temple & Family History / Sharing the Gospel:</label>
@@ -373,7 +375,7 @@
             </details>
 
             <details class="mb-4">
-                <summary>Leadership Instruction</summary>
+                <summary aria-label="Leadership Instruction section with teacher icon"><span class="summary-icon"><i class="fas fa-chalkboard-teacher"></i></span>Leadership Instruction</summary>
                 <div>
                     <label for="leadership-instruction">Notes from Bishopric Member or Adult Adviser:</label>
                     <textarea id="leadership-instruction" name="leadership-instruction" placeholder="Record instructions given..."></textarea>
@@ -381,7 +383,7 @@
             </details>
 
             <details class="mb-4">
-                <summary>Review & Closing</summary>
+                <summary aria-label="Review & Closing section with checkered flag icon"><span class="summary-icon"><i class="fas fa-flag-checkered"></i></span>Review & Closing</summary>
                 <div class="space-y-4">
                     <div>
                         <h4 class="font-semibold mb-2">Items for Review:</h4>
@@ -451,6 +453,13 @@
         let autosaveTimeout;
         let currentModalType = '';
         let currentModalIndex = -1;
+
+        // Date Formatting
+        function formatDate(dateStr) {
+            if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+            const [year, month, day] = dateStr.split('-');
+            return `${day}/${month}/${year}`;
+        }
 
         // Theme Handling
         function toggleTheme() {
@@ -603,7 +612,7 @@
                 try {
                     const data = JSON.parse(localStorage.getItem(key));
                     if (data['meeting-date']) {
-                        displayName = `Agenda ${data['meeting-date']}`;
+                        displayName = `Agenda ${formatDate(data['meeting-date'])}`;
                     }
                 } catch (e) {
                     console.error('Error parsing stored agenda data:', e);
@@ -654,7 +663,7 @@
             li.className = 'dynamic-item';
             li.id = `min-assign-${ministeringAssignmentCount}`;
             li.innerHTML = `
-                <span>Task: ${sanitizeInput(task)} (Assigned to: ${sanitizeInput(assignedTo || 'N/A')}, Status: ${status})</span>
+                <span>Task: ${sanitizeInput(task)} ${assignedTo ? `(Assigned to: ${sanitizeInput(assignedTo)}, Status: ${status})` : `(Status: ${status})`}</span>
                 <button type="button" class="btn-edit" onclick="openItemModal('assignment', ${ministeringAssignmentCount - 1})" aria-label="Edit assignment"><i class="fas fa-edit"></i></button>
                 <button type="button" class="btn-danger" onclick="removeItem('min-assign-${ministeringAssignmentCount}')" aria-label="Remove assignment"><i class="fas fa-times"></i></button>
             `;
@@ -673,7 +682,7 @@
             li.className = 'dynamic-item';
             li.id = `lesson-${lessonCount}`;
             li.innerHTML = `
-                <span>Lesson - Date: ${sanitizeInput(date || 'N/A')}, Teacher: ${sanitizeInput(name)}</span>
+                <span>Lesson - Date: ${sanitizeInput(date ? formatDate(date) : '')}, Teacher: ${sanitizeInput(name)}</span>
                 <button type="button" class="btn-edit" onclick="openItemModal('lesson', ${lessonCount - 1})" aria-label="Edit lesson"><i class="fas fa-edit"></i></button>
                 <button type="button" class="btn-danger" onclick="removeItem('lesson-${lessonCount}')" aria-label="Remove lesson"><i class="fas fa-times"></i></button>
             `;
@@ -692,7 +701,7 @@
             li.className = 'dynamic-item';
             li.id = `activity-${activityCount}`;
             li.innerHTML = `
-                <span>Activity - Date: ${sanitizeInput(date || 'N/A')}, Description: ${sanitizeInput(description)}, Assigned to: ${sanitizeInput(assignedTo || 'N/A')}</span>
+                <span>Activity - Date: ${sanitizeInput(date ? formatDate(date) : '')}, Description: ${sanitizeInput(description)}${assignedTo ? `, Assigned to: ${sanitizeInput(assignedTo)}` : ''}</span>
                 <button type="button" class="btn-edit" onclick="openItemModal('activity', ${activityCount - 1})" aria-label="Edit activity"><i class="fas fa-edit"></i></button>
                 <button type="button" class="btn-danger" onclick="removeItem('activity-${activityCount}')" aria-label="Remove activity"><i class="fas fa-times"></i></button>
             `;
@@ -714,7 +723,7 @@
                     confirmed: formData.ministeringAssignments[index].confirmed || false,
                 };
                 const li = document.getElementById(`min-assign-${index + 1}`);
-                li.querySelector('span').textContent = `Task: ${sanitizeInput(data.task)} (Assigned to: ${sanitizeInput(data.assignedTo || 'N/A')}, Status: ${data.status})`;
+                li.querySelector('span').textContent = `Task: ${sanitizeInput(data.task)} ${data.assignedTo ? `(Assigned to: ${sanitizeInput(data.assignedTo)}, Status: ${data.status})` : `(Status: ${data.status})`}`;
                 showMessage('Assignment updated');
             } else if (type === 'lesson' && formData.lessons[index]) {
                 formData.lessons[index] = {
@@ -723,7 +732,7 @@
                     confirmed: formData.lessons[index].confirmed || false,
                 };
                 const li = document.getElementById(`lesson-${index + 1}`);
-                li.querySelector('span').textContent = `Lesson - Date: ${sanitizeInput(data.date || 'N/A')}, Teacher: ${sanitizeInput(data.name)}`;
+                li.querySelector('span').textContent = `Lesson - Date: ${sanitizeInput(data.date ? formatDate(data.date) : '')}, Teacher: ${sanitizeInput(data.name)}`;
                 showMessage('Lesson updated');
             } else if (type === 'activity' && formData.activities[index]) {
                 formData.activities[index] = {
@@ -733,7 +742,7 @@
                     confirmed: formData.activities[index].confirmed || false,
                 };
                 const li = document.getElementById(`activity-${index + 1}`);
-                li.querySelector('span').textContent = `Activity - Date: ${sanitizeInput(data.date || 'N/A')}, Description: ${sanitizeInput(data.description)}, Assigned to: ${sanitizeInput(data.assignedTo || 'N/A')}`;
+                li.querySelector('span').textContent = `Activity - Date: ${sanitizeInput(data.date ? formatDate(data.date) : '')}, Description: ${sanitizeInput(data.description)}${data.assignedTo ? `, Assigned to: ${sanitizeInput(data.assignedTo)}` : ''}`;
                 showMessage('Activity updated');
             }
             triggerAutosave();
@@ -774,12 +783,14 @@
                 const li = document.getElementById(`min-assign-${i}`);
                 if (li) {
                     const text = li.querySelector('span').textContent;
-                    const match = text.match(/Task: (.*) \(Assigned to: (.*), Status: (.*)\)/);
-                    if (match) {
+                    const statusMatch = text.match(/Status: (.*?)(?:\)|$)/);
+                    const assignedMatch = text.match(/Assigned to: (.*?)(?:, Status|$)/);
+                    const taskMatch = text.match(/^Task: (.*?)(?: \()?/);
+                    if (taskMatch && statusMatch) {
                         data.ministeringAssignments.push({
-                            task: match[1],
-                            assignedTo: match[2] === 'N/A' ? '' : match[2],
-                            status: match[3],
+                            task: taskMatch[1],
+                            assignedTo: assignedMatch ? assignedMatch[1] : '',
+                            status: statusMatch[1],
                             confirmed: true,
                         });
                     }
@@ -789,10 +800,10 @@
                 const li = document.getElementById(`lesson-${i}`);
                 if (li) {
                     const text = li.querySelector('span').textContent;
-                    const match = text.match(/Lesson - Date: (.*), Teacher: (.*)/);
+                    const match = text.match(/Lesson - Date: (.*?), Teacher: (.*)/);
                     if (match) {
                         data.lessons.push({
-                            date: match[1] === 'N/A' ? '' : match[1],
+                            date: match[1] === '' ? '' : match[1].split('/').reverse().join('-'),
                             name: match[2],
                             confirmed: true,
                         });
@@ -803,12 +814,14 @@
                 const li = document.getElementById(`activity-${i}`);
                 if (li) {
                     const text = li.querySelector('span').textContent;
-                    const match = text.match(/Activity - Date: (.*), Description: (.*), Assigned to: (.*)/);
-                    if (match) {
+                    const assignedMatch = text.match(/Assigned to: (.*)$/);
+                    const descMatch = text.match(/Description: (.*?)(?:, Assigned to|$)/);
+                    const dateMatch = text.match(/Date: (.*?)(?:, Description|$)/);
+                    if (descMatch) {
                         data.activities.push({
-                            date: match[1] === 'N/A' ? '' : match[1],
-                            description: match[2],
-                            assignedTo: match[3] === 'N/A' ? '' : match[3],
+                            date: dateMatch && dateMatch[1] !== '' ? dateMatch[1].split('/').reverse().join('-') : '',
+                            description: descMatch[1],
+                            assignedTo: assignedMatch ? assignedMatch[1] : '',
                             confirmed: true,
                         });
                     }
@@ -886,7 +899,7 @@
                         li.innerHTML = `
                             <label class="flex items-center">
                                 <input type="checkbox" data-id="${dataId}" ${isChecked ? 'checked' : ''} aria-label="Check off assignment: ${assign.task}">
-                                <span class="${isChecked ? 'checked-item' : ''}">Task: ${sanitizeInput(assign.task)} (Assigned to: ${sanitizeInput(assign.assignedTo || 'N/A')}, Status: ${assign.status})</span>
+                                <span class="${isChecked ? 'checked-item' : ''}">Task: ${sanitizeInput(assign.task)} ${assign.assignedTo ? `(Assigned to: ${sanitizeInput(assign.assignedTo)}, Status: ${assign.status})` : `(Status: ${assign.status})`}</span>
                             </label>
                         `;
                         previousItemsList.appendChild(li);
@@ -900,7 +913,7 @@
                         li.innerHTML = `
                             <label class="flex items-center">
                                 <input type="checkbox" data-id="${dataId}" ${isChecked ? 'checked' : ''} aria-label="Check off lesson: ${lesson.name}">
-                                <span class="${isChecked ? 'checked-item' : ''}">Lesson - Date: ${sanitizeInput(lesson.date || 'N/A')}, Teacher: ${sanitizeInput(lesson.name)}</span>
+                                <span class="${isChecked ? 'checked-item' : ''}">Lesson - Date: ${sanitizeInput(lesson.date ? formatDate(lesson.date) : '')}, Teacher: ${sanitizeInput(lesson.name)}</span>
                             </label>
                         `;
                         previousItemsList.appendChild(li);
@@ -914,7 +927,7 @@
                         li.innerHTML = `
                             <label class="flex items-center">
                                 <input type="checkbox" data-id="${dataId}" ${isChecked ? 'checked' : ''} aria-label="Check off activity: ${activity.description}">
-                                <span class="${isChecked ? 'checked-item' : ''}">Activity - Date: ${sanitizeInput(activity.date || 'N/A')}, Description: ${sanitizeInput(activity.description)}, Assigned to: ${sanitizeInput(activity.assignedTo || 'N/A')}</span>
+                                <span class="${isChecked ? 'checked-item' : ''}">Activity - Date: ${sanitizeInput(activity.date ? formatDate(activity.date) : '')}, Description: ${sanitizeInput(activity.description)}${activity.assignedTo ? `, Assigned to: ${sanitizeInput(activity.assignedTo)}` : ''}</span>
                             </label>
                         `;
                         previousItemsList.appendChild(li);
@@ -934,9 +947,9 @@
             reviewList.innerHTML = '';
             const formData = getFormData();
             const items = [
-                ...formData.ministeringAssignments.map(a => `Ministering Assignment: ${a.task} (Assigned to: ${a.assignedTo || 'N/A'}, Status: ${a.status})`),
-                ...formData.lessons.map(l => `Lesson - Date: ${l.date || 'N/A'}, Teacher: ${l.name}`),
-                ...formData.activities.map(a => `Activity - Date: ${a.date || 'N/A'}, Description: ${a.description}, Assigned to: ${a.assignedTo || 'N/A'}`),
+                ...formData.ministeringAssignments.map(a => `Ministering Assignment: ${a.task} ${a.assignedTo ? `(Assigned to: ${a.assignedTo}, Status: ${a.status})` : `(Status: ${a.status})`}`),
+                ...formData.lessons.map(l => `Lesson - Date: ${l.date ? formatDate(l.date) : ''}, Teacher: ${l.name}`),
+                ...formData.activities.map(a => `Activity - Date: ${a.date ? formatDate(a.date) : ''}, Description: ${a.description}${a.assignedTo ? `, Assigned to: ${a.assignedTo}` : ''}`),
             ];
             items.forEach(item => {
                 const div = document.createElement('div');
@@ -1072,9 +1085,9 @@
                 }
             };
             addSection('Meeting Details', [
-                `Date: ${formData['meeting-date'] || 'N/A'}`,
-                `Conducting: ${formData['conducting'] || 'N/A'}`,
-                `Opening Prayer: ${formData['opening-prayer'] || 'N/A'}`,
+                `Date: ${formatDate(formData['meeting-date']) || ''}`,
+                `Conducting: ${formData['conducting'] || ''}`,
+                `Opening Prayer: ${formData['opening-prayer'] || ''}`,
             ], true);
 
             const previousKey = getPreviousAgendaKey(formData['meeting-date']);
@@ -1093,9 +1106,9 @@
                     });
                     addSection('Ideas from Previous Meeting', ideas, true);
                     const previousItems = [
-                        ...(previousData.ministeringAssignments?.map((a, i) => `${followUpStatus[`assign-min-${i + 1}`] ? '[x]' : '[ ]'} Task: ${a.task} (Assigned to: ${a.assignedTo || 'N/A'}, Status: ${a.status})`) || []),
-                        ...(previousData.lessons?.map((l, i) => `${followUpStatus[`lesson-${i + 1}`] ? '[x]' : '[ ]'} Lesson - Date: ${l.date || 'N/A'}, Teacher: ${l.name}`) || []),
-                        ...(previousData.activities?.map((a, i) => `${followUpStatus[`activity-${i + 1}`] ? '[x]' : '[ ]'} Activity - Date: ${a.date || 'N/A'}, Description: ${a.description}, Assigned to: ${a.assignedTo || 'N/A'}`) || []),
+                        ...(previousData.ministeringAssignments?.map((a, i) => `${followUpStatus[`assign-min-${i + 1}`] ? '[x]' : '[ ]'} Task: ${a.task} ${a.assignedTo ? `(Assigned to: ${a.assignedTo}, Status: ${a.status})` : `(Status: ${a.status})`}`) || []),
+                        ...(previousData.lessons?.map((l, i) => `${followUpStatus[`lesson-${i + 1}`] ? '[x]' : '[ ]'} Lesson - Date: ${l.date ? formatDate(l.date) : ''}, Teacher: ${l.name}`) || []),
+                        ...(previousData.activities?.map((a, i) => `${followUpStatus[`activity-${i + 1}`] ? '[x]' : '[ ]'} Activity - Date: ${a.date ? formatDate(a.date) : ''}, Description: ${a.description}${a.assignedTo ? `, Assigned to: ${a.assignedTo}` : ''}`) || []),
                     ];
                     addSection('Assignments from Previous Meeting', previousItems, true);
                 } catch (e) {
@@ -1103,11 +1116,11 @@
                 }
             }
             addSection('Ministering', formData['ministering-discussion']);
-            addSection('Ministering Assignments', formData.ministeringAssignments.map(a => `Task: ${a.task} (Assigned to: ${a.assignedTo || 'N/A'}, Status: ${a.status})`), true);
+            addSection('Ministering Assignments', formData.ministeringAssignments.map(a => `Task: ${a.task} ${a.assignedTo ? `(Assigned to: ${a.assignedTo}, Status: ${a.status})` : `(Status: ${a.status})`}`), true);
             addSection('Sunday Quorum/Class Meetings', formData['sunday-discussion']);
-            addSection('Upcoming Lessons', formData.lessons.map(l => `Date: ${l.date || 'N/A'}, Teacher: ${l.name}`), true);
+            addSection('Upcoming Lessons', formData.lessons.map(l => `Date: ${l.date ? formatDate(l.date) : ''}, Teacher: ${l.name}`), true);
             addSection('Service & Activities', formData['skills-ideas']);
-            addSection('Planned Service/Activities', formData.activities.map(a => `Date: ${a.date || 'N/A'}, Description: ${a.description}, Assigned to: ${a.assignedTo || 'N/A'}`), true);
+            addSection('Planned Service/Activities', formData.activities.map(a => `Date: ${a.date ? formatDate(a.date) : ''}, Description: ${a.description}${a.assignedTo ? `, Assigned to: ${a.assignedTo}` : ''}`), true);
             addSection('Temple & Family History / Sharing the Gospel', formData['temple-history']);
             addSection('Inviting the Spirit / Fostering Unity', formData['spirit-unity']);
             addSection('Leadership Instruction', formData['leadership-instruction']);
