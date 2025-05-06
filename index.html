@@ -175,6 +175,17 @@
         .dark .dynamic-item {
             background-color: #4b5563;
         }
+        .checked-item {
+            color: #6b7280;
+        }
+        .dark .checked-item {
+            color: #9ca3af;
+        }
+        /* Optional strikethrough effect
+        .checked-item {
+            text-decoration: line-through;
+        }
+        */
         #message-box {
             position: fixed;
             bottom: 1.5rem;
@@ -306,11 +317,11 @@
             <details class="mb-4">
                 <summary>Follow-Up</summary>
                 <div class="space-y-4">
-                    <div id="previous-assignments-display" class="text-sm text-gray-600 dark:text-gray-300">
+                    <div id="previous-assignments-display" class="text-gray-800 dark:text-white">
                         <h4 class="font-semibold mb-2">Ideas from Previous Meeting:</h4>
-                        <ul id="previous-ideas-list" class="list-disc pl-5" aria-label="Ideas from previous meeting"></ul>
+                        <ul id="previous-ideas-list" class="list-none pl-5" aria-label="Ideas from previous meeting"></ul>
                         <h4 class="font-semibold mt-4 mb-2">Assignments from Previous Meeting:</h4>
-                        <ul id="previous-items-list" class="list-disc pl-5" aria-label="Assignments from previous meeting"></ul>
+                        <ul id="previous-items-list" class="list-none pl-5" aria-label="Assignments from previous meeting"></ul>
                     </div>
                 </div>
             </details>
@@ -758,6 +769,7 @@
                 ministeringAssignments: [],
                 lessons: [],
                 activities: [],
+                followUpStatus: {},
             };
             for (let i = 1; i <= ministeringAssignmentCount; i++) {
                 const li = document.getElementById(`min-assign-${i}`);
@@ -803,6 +815,10 @@
                     }
                 }
             }
+            const checkboxes = document.querySelectorAll('#previous-ideas-list input[type="checkbox"], #previous-items-list input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                data.followUpStatus[checkbox.dataset.id] = checkbox.checked;
+            });
             return data;
         }
 
@@ -813,6 +829,8 @@
             previousIdeasList.innerHTML = '';
             const currentDate = document.getElementById('meeting-date').value;
             const previousKey = getPreviousAgendaKey(currentDate);
+            const formData = getFormData();
+            const followUpStatus = formData.followUpStatus || {};
             if (!previousKey) {
                 console.log('No previous agenda found');
                 return;
@@ -820,22 +838,29 @@
             try {
                 const previousData = JSON.parse(localStorage.getItem(previousKey));
                 const ideas = [
-                    { label: 'Skills/Service', value: previousData['skills-ideas'] },
-                    { label: 'Sunday Discussion', value: previousData['sunday-discussion'] },
-                    { label: 'Temple & Family History', value: previousData['temple-history'] },
-                    { label: 'Spirit/Unity', value: previousData['spirit-unity'] },
+                    { id: 'skills', label: 'Skills/Service', value: previousData['skills-ideas'] },
+                    { id: 'sunday', label: 'Sunday Discussion', value: previousData['sunday-discussion'] },
+                    { id: 'temple', label: 'Temple & Family History', value: previousData['temple-history'] },
+                    { id: 'spirit', label: 'Spirit/Unity', value: previousData['spirit-unity'] },
                 ];
                 let hasItems = false;
-                ideas.forEach(idea => {
+                ideas.forEach((idea, index) => {
                     if (idea.value) {
                         const li = document.createElement('li');
                         li.className = 'dynamic-item';
-                        li.textContent = `${idea.label}: ${sanitizeInput(idea.value)}`;
+                        const dataId = `idea-${idea.id}-${index + 1}`;
+                        const isChecked = followUpStatus[dataId] || false;
+                        li.innerHTML = `
+                            <label class="flex items-center">
+                                <input type="checkbox" data-id="${dataId}" ${isChecked ? 'checked' : ''} aria-label="Check off idea: ${idea.label}">
+                                <span class="${isChecked ? 'checked-item' : ''}">${idea.label}: ${sanitizeInput(idea.value)}</span>
+                            </label>
+                        `;
                         previousIdeasList.appendChild(li);
                         hasItems = true;
                     }
                 });
-                document.getElementById('previous-assignments-display').style.display = hasItems ? 'block' : 'none';
+                document.getElementById('previous-assignments-display').style.display = hasItems || document.getElementById('previous-items-list').children.length > 0 ? 'block' : 'none';
             } catch (e) {
                 console.error('Error updating previous ideas:', e);
             }
@@ -848,28 +873,51 @@
             previousItemsList.innerHTML = '';
             const currentDate = document.getElementById('meeting-date').value;
             const previousKey = getPreviousAgendaKey(currentDate);
+            const formData = getFormData();
+            const followUpStatus = formData.followUpStatus || {};
             let hasItems = false;
             if (previousKey) {
                 try {
                     const previousData = JSON.parse(localStorage.getItem(previousKey));
-                    previousData.ministeringAssignments?.forEach(assign => {
+                    previousData.ministeringAssignments?.forEach((assign, index) => {
                         const li = document.createElement('li');
                         li.className = 'dynamic-item';
-                        li.textContent = `Task: ${sanitizeInput(assign.task)} (Assigned to: ${sanitizeInput(assign.assignedTo || 'N/A')}, Status: ${assign.status})`;
+                        const dataId = `assign-min-${index + 1}`;
+                        const isChecked = followUpStatus[dataId] || false;
+                        li.innerHTML = `
+                            <label class="flex items-center">
+                                <input type="checkbox" data-id="${dataId}" ${isChecked ? 'checked' : ''} aria-label="Check off assignment: ${assign.task}">
+                                <span class="${isChecked ? 'checked-item' : ''}">Task: ${sanitizeInput(assign.task)} (Assigned to: ${sanitizeInput(assign.assignedTo || 'N/A')}, Status: ${assign.status})</span>
+                            </label>
+                        `;
                         previousItemsList.appendChild(li);
                         hasItems = true;
                     });
-                    previousData.lessons?.forEach(lesson => {
+                    previousData.lessons?.forEach((lesson, index) => {
                         const li = document.createElement('li');
                         li.className = 'dynamic-item';
-                        li.textContent = `Lesson - Date: ${sanitizeInput(lesson.date || 'N/A')}, Teacher: ${sanitizeInput(lesson.name)}`;
+                        const dataId = `lesson-${index + 1}`;
+                        const isChecked = followUpStatus[dataId] || false;
+                        li.innerHTML = `
+                            <label class="flex items-center">
+                                <input type="checkbox" data-id="${dataId}" ${isChecked ? 'checked' : ''} aria-label="Check off lesson: ${lesson.name}">
+                                <span class="${isChecked ? 'checked-item' : ''}">Lesson - Date: ${sanitizeInput(lesson.date || 'N/A')}, Teacher: ${sanitizeInput(lesson.name)}</span>
+                            </label>
+                        `;
                         previousItemsList.appendChild(li);
                         hasItems = true;
                     });
-                    previousData.activities?.forEach(activity => {
+                    previousData.activities?.forEach((activity, index) => {
                         const li = document.createElement('li');
                         li.className = 'dynamic-item';
-                        li.textContent = `Activity - Date: ${sanitizeInput(activity.date || 'N/A')}, Description: ${sanitizeInput(activity.description)}, Assigned to: ${sanitizeInput(activity.assignedTo || 'N/A')}`;
+                        const dataId = `activity-${index + 1}`;
+                        const isChecked = followUpStatus[dataId] || false;
+                        li.innerHTML = `
+                            <label class="flex items-center">
+                                <input type="checkbox" data-id="${dataId}" ${isChecked ? 'checked' : ''} aria-label="Check off activity: ${activity.description}">
+                                <span class="${isChecked ? 'checked-item' : ''}">Activity - Date: ${sanitizeInput(activity.date || 'N/A')}, Description: ${sanitizeInput(activity.description)}, Assigned to: ${sanitizeInput(activity.assignedTo || 'N/A')}</span>
+                            </label>
+                        `;
                         previousItemsList.appendChild(li);
                         hasItems = true;
                     });
@@ -893,7 +941,7 @@
             ];
             items.forEach(item => {
                 const div = document.createElement('div');
-                div.className = 'review-item';
+                div.className = 'dynamic-item';
                 div.textContent = item;
                 reviewList.appendChild(div);
             });
@@ -1009,12 +1057,12 @@
             doc.setFontSize(12);
             let y = 30;
             const addSection = (title, content, isList = false) => {
-                if (content) {
+                if (content && (isList ? content.length : content)) {
                     doc.text(title, 20, y);
                     y += 10;
                     if (isList) {
                         content.forEach(item => {
-                            doc.text(`• ${item}`, 25, y);
+                            doc.text(item, 25, y);
                             y += 7;
                         });
                     } else {
@@ -1034,17 +1082,21 @@
             if (previousKey) {
                 try {
                     const previousData = JSON.parse(localStorage.getItem(previousKey));
+                    const followUpStatus = formData.followUpStatus || {};
                     const ideas = [
                         previousData['skills-ideas'] ? `Skills/Service: ${previousData['skills-ideas']}` : '',
                         previousData['sunday-discussion'] ? `Sunday Discussion: ${previousData['sunday-discussion']}` : '',
                         previousData['temple-history'] ? `Temple & Family History: ${previousData['temple-history']}` : '',
                         previousData['spirit-unity'] ? `Spirit/Unity: ${previousData['spirit-unity']}` : '',
-                    ].filter(i => i);
+                    ].filter(i => i).map((idea, index) => {
+                        const dataId = `idea-${['skills', 'sunday', 'temple', 'spirit'][index]}-${index + 1}`;
+                        return `${followUpStatus[dataId] ? '[x]' : '[ ]'} ${idea}`;
+                    });
                     addSection('Ideas from Previous Meeting', ideas, true);
                     const previousItems = [
-                        ...previousData.ministeringAssignments?.map(a => `Task: ${a.task} (Assigned to: ${a.assignedTo || 'N/A'}, Status: ${a.status})`) || [],
-                        ...previousData.lessons?.map(l => `Lesson - Date: ${l.date || 'N/A'}, Teacher: ${l.name}`) || [],
-                        ...previousData.activities?.map(a => `Activity - Date: ${a.date || 'N/A'}, Description: ${a.description}, Assigned to: ${a.assignedTo || 'N/A'}`) || [],
+                        ...(previousData.ministeringAssignments?.map((a, i) => `${followUpStatus[`assign-min-${i + 1}`] ? '[x]' : '[ ]'} Task: ${a.task} (Assigned to: ${a.assignedTo || 'N/A'}, Status: ${a.status})`) || []),
+                        ...(previousData.lessons?.map((l, i) => `${followUpStatus[`lesson-${i + 1}`] ? '[x]' : '[ ]'} Lesson - Date: ${l.date || 'N/A'}, Teacher: ${l.name}`) || []),
+                        ...(previousData.activities?.map((a, i) => `${followUpStatus[`activity-${i + 1}`] ? '[x]' : '[ ]'} Activity - Date: ${a.date || 'N/A'}, Description: ${a.description}, Assigned to: ${a.assignedTo || 'N/A'}`) || []),
                     ];
                     addSection('Assignments from Previous Meeting', previousItems, true);
                 } catch (e) {
@@ -1154,6 +1206,22 @@
                 details.forEach(d => d.removeAttribute('open'));
             } else {
                 details.forEach(d => d.setAttribute('open', ''));
+            }
+        });
+
+        // Checkbox Event Listener for Follow-Up Items
+        document.addEventListener('change', (e) => {
+            if (e.target.matches('#previous-ideas-list input[type="checkbox"], #previous-items-list input[type="checkbox"]')) {
+                console.log('Checkbox changed:', e.target.dataset.id, e.target.checked);
+                const dataId = e.target.dataset.id;
+                const span = e.target.nextElementSibling;
+                if (e.target.checked) {
+                    span.classList.add('checked-item');
+                } else {
+                    span.classList.remove('checked-item');
+                }
+                triggerAutosave();
+                showMessage(`Item ${e.target.checked ? 'checked' : 'unchecked'}`);
             }
         });
 
